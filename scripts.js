@@ -988,6 +988,7 @@ exports.BattleScripts = {
 			} else if (ability === 'Moody') {
 				rejectAbility = true;
 			} else if (ability === 'Multitype') {
+				rejectAbility = template.species!='Arceus'&template.baseSpecies!='Arceus';
 			} else if (ability === 'RKS System') {
 				rejectAbility = template.baseSpecies!='Silvally'&template.species!='Silvally';
 				console.log(rejectAbility);
