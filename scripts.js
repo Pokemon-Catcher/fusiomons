@@ -988,9 +988,9 @@ exports.BattleScripts = {
 			} else if (ability === 'Moody') {
 				rejectAbility = true;
 			} else if (ability === 'Multitype') {
-				rejectAbility = template.species!='Arceus';
 			} else if (ability === 'RKS System') {
-				rejectAbility = template.species!='Silvally';
+				rejectAbility = template.baseSpecies!='Silvally'&template.species!='Silvally';
+				console.log(rejectAbility);
 			} else if (ability === 'Stance Change') {
 			  rejectAbility = template.species!='Aegislash';
 			} else if (ability === 'Disguise') {
@@ -1000,16 +1000,16 @@ exports.BattleScripts = {
 			} else if (ability === 'Forecast') {
 			  rejectAbility = template.species!='Castform';
 			} else if (ability === 'Contrary') {
-			 rejectAbility = !moves.includes('shellsmash')?counter['physicalsetup']|counter['mixedsetupsetup']|counter['specialsetup']|counter['speedsetup']|counter['defensesetup']:false;
+			 rejectAbility = (!moves.includes('shellsmash'))?counter['physicalsetup']|counter['mixedsetupsetup']|counter['specialsetup']|counter['speedsetup']|counter['defensesetup']:false;
 			} else if (ability === 'Battle Bond') {
 			  rejectAbility = template.species!='Greninja';
 			} else if (ability === 'Flower Gift') {
 			  rejectAbility = template.species!='Cherrim';
 			} 
 			if (rejectAbility) {
-				if((abilities[integ].rating>=1)&(abilities[integ].name!='Wonder Guard'&abilities[integ].name!='Moody')&abilities[integ])
+				if((abilities[abilities.indexOf(ability)+1].rating>=1))
 				{
-					ability=abilities[integ].name;
+					ability=abilities[abilities.indexOf(ability)+1].name;
 				}
 			}
 			if (abilities.includes('Chlorophyll') && ability !== 'Solar Power' && hasMove['sunnyday']) {
@@ -1052,14 +1052,15 @@ exports.BattleScripts = {
 		}
 
 		item = 'Leftovers';
-		if (template.requiredItems) {
-			if (template.baseSpecies === 'Arceus' && hasMove['judgment']) {
+		if (template.requiredItems|template2.requiredItems) {
+			if (hasMove['judgment']) {
 				// Judgment doesn't change type with Z-Crystals
-				item = template.requiredItems[0];
-			} else {
+				item = template.requiredItems?template.requiredItems[0]:template2.requiredItems[0];
+			} else if(template.requiredItems) {
 				item = template.requiredItems[this.random(template.requiredItems.length)];
+				}
 			}
-		} else if (hasMove['magikarpsrevenge']) {
+		else if (hasMove['magikarpsrevenge']) {
 			// PoTD Magikarp
 			item = 'Choice Band';
 		} else if (template.species === 'Rotom-Fan') {
@@ -1207,45 +1208,37 @@ exports.BattleScripts = {
 		if (item === 'Leftovers' && hasType['Poison']) {
 			item = 'Black Sludge';
 		}
+		
+		let mbstmin = 1307; // Sunkern has the lowest modified base stat total, and that total is 807
+			let stats={};
+			for(let statName in template.baseStats)
+			{
+			stats[statName] = (template.baseStats[statName]+template2.baseStats[statName])/2;
+			}
+			// If Wishiwashi, use the school-forme's much higher stats
+			if (template.baseSpecies === 'Wishiwashi') stats = Dex.getTemplate('wishiwashischool').baseStats;
 
-		let levelScale = {
-			LC: 87,
-			'LC Uber': 86,
-			NFE: 84,
-			PU: 83,
-			BL4: 82,
-			NU: 81,
-			BL3: 80,
-			RU: 79,
-			BL2: 78,
-			UU: 77,
-			BL: 76,
-			OU: 75,
-			Uber: 73,
-			AG: 71,
-		};
-		let customScale = {
-			// Banned Abilities
-			Gothitelle: 77, Politoed: 79, Wobbuffet: 77,
+			// Modified base stat total assumes 31 IVs, 85 EVs in every stat
+			let mbst = (stats["hp"] * 2 + 31 + 21 + 100) + 10;
+			mbst += (stats["atk"] * 2 + 31 + 21 + 100) + 5;
+			mbst += (stats["def"] * 2 + 31 + 21 + 100) + 5;
+			mbst += (stats["spa"] * 2 + 31 + 21 + 100) + 5;
+			mbst += (stats["spd"] * 2 + 31 + 21 + 100) + 5;
+			mbst += (stats["spe"] * 2 + 31 + 21 + 100) + 5;
 
-			// Holistic judgement
-			Unown: 100,
-		};
-		let tier = template.tier;
-		if (tier.includes('Unreleased') && baseTemplate.tier === 'Uber') {
-			tier = 'Uber';
-		}
-		if (tier.charAt(0) === '(') {
-			tier = tier.slice(1, -1);
-		}
-		let level = levelScale[tier] || 75;
-		if (customScale[template.name]) level = customScale[template.name];
+			let level = Math.floor(100 * mbstmin / mbst); // Initial level guess will underestimate
 
-		// Custom level based on moveset
-		if (ability === 'Power Construct') level = 73;
-		if (hasMove['batonpass'] && counter.setupType && level > 77) level = 77;
-		// if (template.name === 'Slurpuff' && !counter.setupType) level = 81;
-		// if (template.name === 'Xerneas' && hasMove['geomancy']) level = 71;
+			while (level < 100) {
+				mbst = Math.floor((stats["hp"] * 2 + 31 + 21 + 100) * level / 100 + 10);
+				mbst += Math.floor(((stats["atk"] * 2 + 31 + 21 + 100) * level / 100 + 5) * level / 100); // Since damage is roughly proportional to level
+				mbst += Math.floor((stats["def"] * 2 + 31 + 21 + 100) * level / 100 + 5);
+				mbst += Math.floor(((stats["spa"] * 2 + 31 + 21 + 100) * level / 100 + 5) * level / 100);
+				mbst += Math.floor((stats["spd"] * 2 + 31 + 21 + 100) * level / 100 + 5);
+				mbst += Math.floor((stats["spe"] * 2 + 31 + 21 + 100) * level / 100 + 5);
+
+				if (mbst >= mbstmin) break;
+				level++;
+			}
 
 		// Prepare optimal HP
 		let hp = Math.floor(Math.floor(2 * baseStatsFusion.hp + ivs.hp + Math.floor(evs.hp / 4) + 100) * level / 100 + 10);
@@ -1286,8 +1279,6 @@ exports.BattleScripts = {
 			evs: evs,
 			ivs: ivs,
 			item: item,
-			level: level,
-			shiny: !this.random(1024),
 		};
 	},
 	queryMoves: function (moves, hasType, hasAbility, movePool) {

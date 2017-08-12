@@ -166,7 +166,7 @@ exports.BattleFormats = {
 						}
 					for(let a in template1.baseStats)
 						{
-						StatsSum0+=(template1.isMega|this.getItem(set.item).megaEvolves==set.species)?this.getTemplate(this.getItem(set.item).megaStone).baseStats[a]:template1.baseStats[a];
+						StatsSum0+=(this.getItem(set.item).megaEvolves==set.species)?this.getTemplate(this.getItem(set.item).megaStone).baseStats[a]:template1.baseStats[a];
 						
 						StatsSum1+=template2.baseStats[a];
 						}
@@ -263,7 +263,7 @@ exports.BattleFormats = {
 					this.add('-start', pokemon, 'typechange', pokemon.types.join('/'), '[silent]');
 					if(!pokemon.transformed)
 						{
-						this.add('-hint', ""+pokemon.species+" + "+d[template2.speciesid].species+' base stats:');
+						this.add('html', `<b>${""+pokemon.species+" + "+d[template2.speciesid].species+' base stats:'}</b>`);
 						if(template2.exists)
 							{
 							let baseStatsFusion={};
@@ -271,8 +271,9 @@ exports.BattleFormats = {
 								{
 								baseStatsFusion[i]=Math.round((d[pokemon.template.speciesid].baseStats[i]+d[template2.speciesid].baseStats[i])/2);
 								}
-								let baseStatsFusionText='HP: '+baseStatsFusion['hp']+'\nAttack: '+baseStatsFusion['atk']+'\nDefense: '+baseStatsFusion['def']+'\nSp.Attack: '+baseStatsFusion['spa']+'\nSp.Defense: '+baseStatsFusion['spd']+'\nSpeed: '+baseStatsFusion['spe'];
-								this.add('-hint', baseStatsFusionText);
+								let baseStatsFusionText=`<table><tr><b><th>HP</th><th>Attack</th><th>Defense</th><th>Sp.Attack</th><th>Sp.Defense</th><th>Speed</th></b></tr> <tr><td>${baseStatsFusion['hp']}</td><td>${baseStatsFusion['atk']}</td><td>${baseStatsFusion['def']}</td><td>${baseStatsFusion['spa']}</td><td>${baseStatsFusion['spd']}</td><td>${baseStatsFusion['spe']}</td></tr></table>`;
+								//let baseStatsFusionText=`<b>${'HP:'}</b>${baseStatsFusion['hp']}<b>${' Attack:'}</b>${baseStatsFusion['atk']}<b>${' Defense:'}</b>${baseStatsFusion['def']}<b>${' Sp.Attack:'}</b>${baseStatsFusion['spa']}<b>${' Sp.Defense:'}</b>${baseStatsFusion['spd']}<b>${' Speed:'}</b>${baseStatsFusion['spe']}`;
+								this.add('html', `<font size=0.95 color=#5c5c8a>${baseStatsFusionText}</font>`);
 							}
 						}
 					pokemon.addVolatile('hybride');
@@ -280,4 +281,38 @@ exports.BattleFormats = {
 			}
 		},
 	},
+	teampreview: {
+		effectType: 'Rule',
+		name: 'Team Preview',
+		onStartPriority: -11,
+		onStart: function () {
+			this.add('clearpoke');
+			for (let i = 0; i < this.sides[0].pokemon.length; i++) {
+				let pokemon = this.sides[0].pokemon[i];
+				let details = pokemon.details.replace(/(Arceus|Gourgeist|Genesect|Pumpkaboo|Silvally)(-[a-zA-Z?]+)?/g, '$1-*');
+				this.add('poke', pokemon.side.id, details, pokemon.item ? 'item' : '');
+			}
+			for (let i = 0; i < this.sides[1].pokemon.length; i++) {
+				let pokemon = this.sides[1].pokemon[i];
+				let details = pokemon.details.replace(/(Arceus|Gourgeist|Genesect|Pumpkaboo|Silvally)(-[a-zA-Z?]+)?/g, '$1-*');
+				this.add('poke', pokemon.side.id, details, pokemon.item ? 'item' : '');
+			}
+			this.add('html',`<font color=#18334e><b>${this.p1.name+'\'s team:'}</b></font>`); 
+			let pokemonlist=[];
+			let pokemonlist2=[];
+			for(let p in this.p1.pokemon)
+			{
+				if(this.p1.pokemon[p].name&&this.getTemplate(this.p1.pokemon[p].name.substring(1,20)).exists)pokemonlist[p]=this.p1.pokemon[p].species+'+'+this.getTemplate(this.p1.pokemon[p].name.substring(1,20)).species; 
+			}
+			this.add('html',`  <div style="padding: 0px 0px 0px 0px;margin-Bottom: 8px;margin-Left: 15px;margin-Top=0";fontSize=12><font color=#254d74>${pokemonlist.join(' / ')}</font></div>`);
+			this.add('html',`<b><font color=#73264b>${this.p2.name+'\'s team:'}</font></b>`); 
+			for(let p in this.p2.pokemon)
+			{
+				if(this.p2.pokemon[p].name&&this.getTemplate(this.p2.pokemon[p].name.substring(1,20)).exists)pokemonlist2[p]=this.p2.pokemon[p].species+'+'+this.getTemplate(this.p2.pokemon[p].name.substring(1,20)).species; 
+			}
+			this.add('html',` <div style="padding: 0px 0px 0px 0px;margin-Bottom: 8px;margin-Left: 15px;margin-Top=0";fontSize=12><font color=#993364> ${pokemonlist2.join(' / ')}</font></div>`);
+			},
+	},
+	
 	}
+

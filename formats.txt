@@ -1,0 +1,119 @@
+{
+		name: "[Gen 7] Random Fusionmons Battle",
+		desc: [
+		"Battle of random pokemon fusions"
+		],
+		mod: 'fusiomons',
+		team: 'random',
+		ruleset: ['Pokemon','Fusion', 'PotD','Sleep Clause Mod', 'Species Clause', 'Nickname Clause', 'OHKO Clause', 'Moody Clause', 'Evasion Moves Clause', 'Endless Battle Clause', 'HP Percentage Mod', 'Cancel Mod','Mega Rayquaza Clause'],
+		onModifyTemplate: function (template, pokemon) {
+			let pokedex=this.data['Pokedex'];
+			let name=pokemon.species;
+			let template2 = pokemon.baseTemplate;
+				if(pokemon.name != undefined)
+					{
+					name=pokemon.name.substring(1,20);
+					template2 = this.getTemplate(name);
+					}
+				if(!template2.exists)
+					{
+					name=pokemon.species;
+					template2 =  pokemon.baseTemplate;
+					}
+				let stats={};
+				let new_types=template.types;
+				if(pokedex[template2.speciesid].types!=pokemon.types&!pokemon.transformed)
+					{
+					if(pokedex[template2.speciesid].types[1]!=undefined)
+						{
+						let f=pokedex[template.speciesid].types[0];
+						let s=pokedex[template2.speciesid].types[1];
+						new_types={f,s};
+						}
+					else
+						{
+						let f=pokedex[template.speciesid].types[0];
+						let s=pokedex[template2.speciesid].types[0];
+						new_types={f,s};
+						}
+					}
+				if(new_types.f==new_types.s)
+					{
+					delete new_types.s;
+					}
+					let temple=template;
+					pokemon.removeVolatile('hybride');
+			if(template2.exists&template2!=pokemon.baseTemplate&!pokemon.getVolatile('hybride')&!pokemon.transformed)
+				{
+				for(let stat in template.baseStats)
+					{
+					stats[stat]=(pokedex[pokemon.template.speciesid].baseStats[stat]+pokedex[template2.speciesid].baseStats[stat])/2;
+					}
+				temple.baseStats=stats;
+				temple.weightkg=(pokedex[pokemon.template.speciesid].weightkg+pokedex[template2.speciesid].weightkg)/2;
+				console.log(''+temple.weightkg+'- ModifyTemplate');
+				}
+		temple.types=Object.values(new_types);
+		return temple;
+		},
+	},
+	{
+		name: "[Gen 7] Fusionmons",
+		desc: [
+			"Battle of pokemon fusions",
+		],
+
+		mod: 'fusiomons',
+		ruleset: ['Pokemon','Fusion', 'Sleep Clause Mod', 'Species Clause', 'Nickname Clause', 'OHKO Clause', 'Moody Clause', 'Evasion Moves Clause', 'Endless Battle Clause', 'Exact HP Mod', 'Cancel Mod', 'Team Preview','Mega Rayquaza Clause'],
+		banlist: ['Primordial Sea','Desolate Land','Delta Stream','Parental Bond','Shadow Tag','Power Construct','Kangaskhanite','CAP','Red Orb','Blue Orb','Gengarite'],
+		onModifyTemplate: function (template, pokemon) {
+			let pokedex=this.data['Pokedex'];
+			let name=pokemon.species;
+			let template2 = pokemon.baseTemplate;
+				if(pokemon.name != undefined)
+					{
+					name=pokemon.name.substring(1,20);
+					template2 = this.getTemplate(name);
+					}
+				if(!template2.exists)
+					{
+					name=pokemon.species;
+					template2 =  pokemon.baseTemplate;
+					}
+				let stats={};
+				let new_types=template.types;
+				if(pokedex[template2.speciesid].types!=pokemon.types&!pokemon.transformed)
+					{
+					if(pokedex[template2.speciesid].types[1]!=undefined)
+						{
+						let f=pokedex[template.speciesid].types[0];
+						let s=pokedex[template2.speciesid].types[1];
+						new_types={f,s};
+						}
+					else
+						{
+						let f=pokedex[template.speciesid].types[0];
+						let s=pokedex[template2.speciesid].types[0];
+						new_types={f,s};
+						}
+					}
+				if(new_types.f==new_types.s)
+					{
+					delete new_types.s;
+					}
+					let temple=template;
+					pokemon.removeVolatile('hybride');
+			if(template2.exists&template2!=pokemon.baseTemplate&!pokemon.getVolatile('hybride')&!pokemon.transformed)
+				{
+				for(let stat in template.baseStats)
+					{
+					stats[stat]=(pokedex[pokemon.template.speciesid].baseStats[stat]+pokedex[template2.speciesid].baseStats[stat])/2;
+					}
+				temple.baseStats=stats;
+				temple.weightkg=(pokedex[pokemon.template.speciesid].weightkg+pokedex[template2.speciesid].weightkg)/2;
+
+				}
+		temple.types=Object.values(new_types);
+		return temple;
+		},
+		},

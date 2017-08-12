@@ -39,258 +39,6 @@ class RandomFusionTeams extends RandomTeams {
 		let species = template.species;
 		let species2 = template2.species;
 		if (!template.exists) continue;
-
-		// Limit to one of each species (Species Clause)
-		if (baseFormes[template.baseSpecies]) continue;
-
-		// Only certain NFE Pokemon are allowed
-		if (template.evos.length && !allowedNFE[template.species]) continue;
-
-		let tier = template.tier;
-		let tier2 = template2.tier;
-		switch (tier) {
-		case 'Uber':
-			// Ubers are limited to 2 but have a 20% chance of being added anyway.
-			if (uberCount > 2 && this.random(5) >= 1) continue;
-			break;
-		case 'PU':
-			// PUs are limited to 2 but have a 20% chance of being added anyway.
-			if (puCount > 2 && this.random(5) >= 1) continue;
-			break;
-		}
-		switch (tier2) {
-		case 'Uber':
-			// Ubers are limited to 2 but have a 20% chance of being added anyway.
-			if (uberCount > 2 && this.random(5) >= 1) continue;
-			break;
-		case 'PU':
-			// PUs are limited to 2 but have a 20% chance of being added anyway.
-			if (puCount > 2 && this.random(5) >= 1) continue;
-			break;
-		}
-
-		// Adjust rate for species with multiple formes
-		switch (template.baseSpecies) {
-		case 'Arceus': case 'Silvally':
-			if (this.random(18) >= 1) continue;
-			break;
-		case 'Pikachu':
-			if (this.random(7) >= 1) continue;
-			continue;
-		case 'Genesect':
-			if (this.random(5) >= 1) continue;
-			break;
-		case 'Castform': case 'Gourgeist': case 'Oricorio':
-			if (this.random(4) >= 1) continue;
-			break;
-		case 'Basculin': case 'Cherrim': case 'Greninja': case 'Hoopa': case 'Meloetta': case 'Meowstic':
-			if (this.random(2) >= 1) continue;
-			break;
-		}
-
-		if (potd && potd.exists) {
-			// The Pokemon of the Day belongs in slot 2
-			if (team.length === 1) {
-				template = potd;
-				if (template.species === 'Magikarp') {
-					template.randomBattleMoves = ['bounce', 'flail', 'splash', 'magikarpsrevenge'];
-				} else if (template.species === 'Delibird') {
-					template.randomBattleMoves = ['present', 'bestow'];
-				}
-			} else if (template.species === potd.species) {
-				continue; // No thanks, I've already got one
-			}
-			}
-
-			let set = this.randomSet(template, template2, i, teamDetails);
-
-
-			let ability = set.ability;
-
-			let item = '';
-			item=set.item;
-			// Make sure forme is legal
-			if (template.battleOnly || template.requiredItems && !template.requiredItems.some(req => toId(req) === item)) {
-				template = this.getTemplate(template.baseSpecies);
-				species = template.name;
-			}
-			if(template2.battleOnly)
-			{
-			template2 = this.getTemplate(template2.baseSpecies);
-			species2 = template2.name;
-			}
-
-			// Make sure that a base forme does not hold any forme-modifier items.
-			let itemData = this.getItem(item);
-			if (itemData.forcedForme && species === this.getTemplate(itemData.forcedForme).baseSpecies) {
-				do {
-					item = items[this.random(items.length)];
-					itemData = this.getItem(item);
-				} while (itemData.gen > this.gen || itemData.isNonstandard || itemData.forcedForme && species === this.getTemplate(itemData.forcedForme).baseSpecies);
-			}
-
-
-
-			// Four random unique moves from the movepool
-			let incompatibleMoves = ['bellydrum', 'swordsdance', 'calmmind', 'nastyplot','dragondance','quiverdance','shiftgear','shellsmash','honeclaws','tailglow','workup','growth','sharpen','curse','coil','bulkup'];
-			let moves=set.moves;
-			let move;
-			let moved;
-			
-			let intersectMoves = moves.filter(moved => incompatibleMoves.includes(moved));
-			if (intersectMoves.length > 1) continue;
-
-			let types = [template.types[0],template2.types[1]!=undefined?template2.types[1]:template2.types[0]] ;
-				let skip = false;
-				for (let t = 0; t < types.length; t++) 
-				{
-					if (typeCount[types[t]] > 1 && this.random(5) >= 1) 
-					{
-						skip = true;
-						break;
-					}
-				}
-			if (skip) continue;
-
-
-			// Limit 1 of any type combination, 2 in monotype
-			let typeCombo = types.slice().sort().join();
-			if (set.ability === 'Drought' || set.ability === 'Drizzle' || set.ability === 'Sand Stream') {
-				// Drought, Drizzle and Sand Stream don't count towards the type combo limit
-				typeCombo = set.ability;
-				if (typeCombo in typeComboCount) continue;
-			} else {
-				if (typeComboCount[typeCombo] >= 1) continue;
-			}
-
-			let nature = set.nature;
-
-			// Level balance--calculate directly from stats rather than using some silly lookup table
-			let mbstmin = 1307; // Sunkern has the lowest modified base stat total, and that total is 807
-			let stats={};
-			for(let statName in template.baseStats)
-			{
-			stats[statName] = (template.baseStats[statName]+template2.baseStats[statName])/2;
-			}
-			// If Wishiwashi, use the school-forme's much higher stats
-			if (template.baseSpecies === 'Wishiwashi') stats = Dex.getTemplate('wishiwashischool').baseStats;
-
-			// Modified base stat total assumes 31 IVs, 85 EVs in every stat
-			let mbst = (stats["hp"] * 2 + 31 + 21 + 100) + 10;
-			mbst += (stats["atk"] * 2 + 31 + 21 + 100) + 5;
-			mbst += (stats["def"] * 2 + 31 + 21 + 100) + 5;
-			mbst += (stats["spa"] * 2 + 31 + 21 + 100) + 5;
-			mbst += (stats["spd"] * 2 + 31 + 21 + 100) + 5;
-			mbst += (stats["spe"] * 2 + 31 + 21 + 100) + 5;
-
-			let level = Math.floor(100 * mbstmin / mbst); // Initial level guess will underestimate
-
-			while (level < 100) {
-				mbst = Math.floor((stats["hp"] * 2 + 31 + 21 + 100) * level / 100 + 10);
-				mbst += Math.floor(((stats["atk"] * 2 + 31 + 21 + 100) * level / 100 + 5) * level / 100); // Since damage is roughly proportional to level
-				mbst += Math.floor((stats["def"] * 2 + 31 + 21 + 100) * level / 100 + 5);
-				mbst += Math.floor(((stats["spa"] * 2 + 31 + 21 + 100) * level / 100 + 5) * level / 100);
-				mbst += Math.floor((stats["spd"] * 2 + 31 + 21 + 100) * level / 100 + 5);
-				mbst += Math.floor((stats["spe"] * 2 + 31 + 21 + 100) * level / 100 + 5);
-
-				if (mbst >= mbstmin) break;
-				level++;
-			}
-
-			let evs=set.evs;
-			let ivs=set.ivs;
-			// Random gender--already handled by PS
-
-			// PINGAS
-			let happiness = 256;
-
-			// Random shininess
-			let shiny = !this.random(1024);
-
-			//Counters
-			if(item.megaStone)megaCount++;
-			if(megaCount>1) {megaCount=1;continue;}
-			if (item.megaStone) teamDetails['megaStone'] = 1;
-			if (item.zMove) teamDetails['zMove'] = 1;
-			if (ability === 'Snow Warning') teamDetails['hail'] = 1;
-			if (ability === 'Drizzle' || moves.includes('raindance')) teamDetails['rain'] = 1;
-			if (ability === 'Sand Stream') teamDetails['sand'] = 1;
-			if (moves.includes('stealthrock')) teamDetails['stealthRock'] = 1;
-			if (moves.includes('toxicspikes')) teamDetails['toxicSpikes'] = 1;
-			if (moves.includes('defog') || moves.includes('rapidspin')) teamDetails['hazardClear'] = 1;
-			baseFormes[template.baseSpecies] = 1;
-
-			// Increment type counters
-			for (let t = 0; t < types.length; t++) {
-				if (types[t] in typeCount) {
-					typeCount[types[t]]++;
-				} else {
-					typeCount[types[t]] = 1;
-				}
-			}
-			if (typeCombo in typeComboCount) {
-				typeComboCount[typeCombo]++;
-			} else {
-				typeComboCount[typeCombo] = 1;
-			}
-
-			// Increment Uber/PU counters
-			if (tier === 'Uber'|tier2 === 'Uber') {
-				uberCount++;
-			} else if (tier === 'PU'|tier2 === 'PU') {
-				puCount++;
-			}
-			i++;
-
-			team.push({
-				name: '+'+template2.speciesid,
-				species: template.species,
-				item: item,
-				ability: ability,
-				moves: moves,
-				evs: evs,
-				ivs: ivs,
-				nature: nature,
-				level: level,
-				happiness: happiness,
-				shiny: shiny,
-			});
-		}{
-		let excludedTiers = {'NFE':1,'LC Uber':1, 'LC':1};
-		let allowedNFE = {'Chansey':1, 'Doublade':1, 'Gligar':1, 'Porygon2':1, 'Scyther':1, 'Togetic':1,'Dusclops':1,'Yanma':1};
-		let team = [];
-		let natures = Object.keys(this.data.Natures);
-		let items = Object.keys(this.data.Items);
-		let teamDetails={};
-		let pokemonPool = [];
-		for (let id in this.data.FormatsData) 
-			{
-			let templated = this.getTemplate(id);
-			if (templated.gen <= this.gen && !excludedTiers[templated.tier] && !templated.isMega && !templated.isPrimal && !templated.isNonstandard && templated.randomBattleMoves) 
-				{
-				pokemonPool.push(id);
-				}	
-			}
-		let potd;
-		if (Config.potd && 'Rule:potd' in this.getBanlistTable(this.getFormat())) {
-			potd = this.getTemplate(Config.potd);
-		}
-		let typeCount = {};
-		let typeComboCount = {};
-		let baseFormes = {};
-		let uberCount = 0;
-		let puCount = 0;
-		//One mega per Team
-		let megaCount = 0;
-		
-		let i=0;
-
-		while (pokemonPool.length && team.length < 6) {
-		let template = this.getTemplate(this.sampleNoReplace(pokemonPool));
-		let template2 = this.getTemplate(this.sampleNoReplace(pokemonPool));
-		let species = template.species;
-		let species2 = template2.species;
-		if (!template.exists) continue;
 		
 
 		// Limit to one of each species (Species Clause)
@@ -1241,9 +989,10 @@ class RandomFusionTeams extends RandomTeams {
 			} else if (ability === 'Moody') {
 				rejectAbility = true;
 			} else if (ability === 'Multitype') {
-				rejectAbility = template.species!='Arceus';
+				rejectAbility = template.species!='Arceus'&template.baseSpecies!='Arceus';
 			} else if (ability === 'RKS System') {
-				rejectAbility = template.species!='Silvally';
+				rejectAbility = template.baseSpecies!='Silvally'&template.species!='Silvally';
+				console.log(rejectAbility);
 			} else if (ability === 'Stance Change') {
 			  rejectAbility = template.species!='Aegislash';
 			} else if (ability === 'Disguise') {
@@ -1253,16 +1002,16 @@ class RandomFusionTeams extends RandomTeams {
 			} else if (ability === 'Forecast') {
 			  rejectAbility = template.species!='Castform';
 			} else if (ability === 'Contrary') {
-			 rejectAbility = !moves.includes('shellsmash')?counter['physicalsetup']|counter['mixedsetupsetup']|counter['specialsetup']|counter['speedsetup']|counter['defensesetup']:false;
+			 rejectAbility = (!moves.includes('shellsmash'))?counter['physicalsetup']|counter['mixedsetupsetup']|counter['specialsetup']|counter['speedsetup']|counter['defensesetup']:false;
 			} else if (ability === 'Battle Bond') {
 			  rejectAbility = template.species!='Greninja';
 			} else if (ability === 'Flower Gift') {
 			  rejectAbility = template.species!='Cherrim';
 			} 
 			if (rejectAbility) {
-				if((abilities[integ].rating>=1)&(abilities[integ].name!='Wonder Guard'&abilities[integ].name!='Moody')&abilities[integ])
+				if((abilities[abilities.indexOf(ability)+1].rating>=1))
 				{
-					ability=abilities[integ].name;
+					ability=abilities[abilities.indexOf(ability)+1].name;
 				}
 			}
 			if (abilities.includes('Chlorophyll') && ability !== 'Solar Power' && hasMove['sunnyday']) {
@@ -1305,14 +1054,15 @@ class RandomFusionTeams extends RandomTeams {
 		}
 
 		item = 'Leftovers';
-		if (template.requiredItems) {
-			if (template.baseSpecies === 'Arceus' && hasMove['judgment']) {
+		if (template.requiredItems|template2.requiredItems) {
+			if (hasMove['judgment']) {
 				// Judgment doesn't change type with Z-Crystals
-				item = template.requiredItems[0];
-			} else {
+				item = template.requiredItems?template.requiredItems[0]:template2.requiredItems[0];
+			} else if(template.requiredItems) {
 				item = template.requiredItems[this.random(template.requiredItems.length)];
+				}
 			}
-		} else if (hasMove['magikarpsrevenge']) {
+		else if (hasMove['magikarpsrevenge']) {
 			// PoTD Magikarp
 			item = 'Choice Band';
 		} else if (template.species === 'Rotom-Fan') {
@@ -1460,45 +1210,37 @@ class RandomFusionTeams extends RandomTeams {
 		if (item === 'Leftovers' && hasType['Poison']) {
 			item = 'Black Sludge';
 		}
+		
+		let mbstmin = 1307; // Sunkern has the lowest modified base stat total, and that total is 807
+			let stats={};
+			for(let statName in template.baseStats)
+			{
+			stats[statName] = (template.baseStats[statName]+template2.baseStats[statName])/2;
+			}
+			// If Wishiwashi, use the school-forme's much higher stats
+			if (template.baseSpecies === 'Wishiwashi') stats = Dex.getTemplate('wishiwashischool').baseStats;
 
-		let levelScale = {
-			LC: 87,
-			'LC Uber': 86,
-			NFE: 84,
-			PU: 83,
-			BL4: 82,
-			NU: 81,
-			BL3: 80,
-			RU: 79,
-			BL2: 78,
-			UU: 77,
-			BL: 76,
-			OU: 75,
-			Uber: 73,
-			AG: 71,
-		};
-		let customScale = {
-			// Banned Abilities
-			Gothitelle: 77, Politoed: 79, Wobbuffet: 77,
+			// Modified base stat total assumes 31 IVs, 85 EVs in every stat
+			let mbst = (stats["hp"] * 2 + 31 + 21 + 100) + 10;
+			mbst += (stats["atk"] * 2 + 31 + 21 + 100) + 5;
+			mbst += (stats["def"] * 2 + 31 + 21 + 100) + 5;
+			mbst += (stats["spa"] * 2 + 31 + 21 + 100) + 5;
+			mbst += (stats["spd"] * 2 + 31 + 21 + 100) + 5;
+			mbst += (stats["spe"] * 2 + 31 + 21 + 100) + 5;
 
-			// Holistic judgement
-			Unown: 100,
-		};
-		let tier = template.tier;
-		if (tier.includes('Unreleased') && baseTemplate.tier === 'Uber') {
-			tier = 'Uber';
-		}
-		if (tier.charAt(0) === '(') {
-			tier = tier.slice(1, -1);
-		}
-		let level = levelScale[tier] || 75;
-		if (customScale[template.name]) level = customScale[template.name];
+			let level = Math.floor(100 * mbstmin / mbst); // Initial level guess will underestimate
 
-		// Custom level based on moveset
-		if (ability === 'Power Construct') level = 73;
-		if (hasMove['batonpass'] && counter.setupType && level > 77) level = 77;
-		// if (template.name === 'Slurpuff' && !counter.setupType) level = 81;
-		// if (template.name === 'Xerneas' && hasMove['geomancy']) level = 71;
+			while (level < 100) {
+				mbst = Math.floor((stats["hp"] * 2 + 31 + 21 + 100) * level / 100 + 10);
+				mbst += Math.floor(((stats["atk"] * 2 + 31 + 21 + 100) * level / 100 + 5) * level / 100); // Since damage is roughly proportional to level
+				mbst += Math.floor((stats["def"] * 2 + 31 + 21 + 100) * level / 100 + 5);
+				mbst += Math.floor(((stats["spa"] * 2 + 31 + 21 + 100) * level / 100 + 5) * level / 100);
+				mbst += Math.floor((stats["spd"] * 2 + 31 + 21 + 100) * level / 100 + 5);
+				mbst += Math.floor((stats["spe"] * 2 + 31 + 21 + 100) * level / 100 + 5);
+
+				if (mbst >= mbstmin) break;
+				level++;
+			}
 
 		// Prepare optimal HP
 		let hp = Math.floor(Math.floor(2 * baseStatsFusion.hp + ivs.hp + Math.floor(evs.hp / 4) + 100) * level / 100 + 10);
@@ -1539,8 +1281,6 @@ class RandomFusionTeams extends RandomTeams {
 			evs: evs,
 			ivs: ivs,
 			item: item,
-			level: level,
-			shiny: !this.random(1024),
 		};
 	}
     queryMoves(moves, hasType, hasAbility, movePool) {
