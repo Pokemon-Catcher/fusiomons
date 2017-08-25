@@ -1,9 +1,9 @@
 	{
-		name: "[Gen 7] Random Fusionmons Battle",
+		name: "[Gen 7] Fusionmons Random Battle",
 		desc: ["Battle of random pokemon fusions"],
 		mod: 'fusiomons',
 		team: 'random',
-		ruleset: ['Pokemon', 'Fusion', 'PotD','Sleep Clause Mod', 'Species Clause', 'Nickname Clause', 'OHKO Clause', 'Moody Clause', 'Evasion Moves Clause', 'Endless Battle Clause', 'HP Percentage Mod', 'Cancel Mod','Mega Rayquaza Clause'],
+		ruleset: ['Pokemon', 'Fusion', 'PotD', 'Sleep Clause Mod', 'HP Percentage Mod', 'Cancel Mod',],
 		onModifyTemplate: function (template, pokemon) {
 			let pokedex=this.data['Pokedex'];
 			let name=pokemon.species;
@@ -18,7 +18,7 @@
 				}
 				let stats={};
 				let new_types=template.types;
-				if(pokedex[template2.speciesid].types!==pokemon.types&!pokemon.transformed) {
+				if(pokedex[template2.speciesid].types!==pokemon.types && !pokemon.transformed) {
 					if(pokedex[template2.speciesid].types[1]!==undefined) {
 						let f=pokedex[template.speciesid].types[0];
 						let s=pokedex[template2.speciesid].types[1];
@@ -50,7 +50,7 @@
 		desc: ["Battle of pokemon fusions",],
 
 		mod: 'fusiomons',
-		ruleset: ['Pokemon', 'Fusion', 'Sleep Clause Mod', 'Species Clause', 'Nickname Clause', 'OHKO Clause', 'Moody Clause', 'Evasion Moves Clause', 'Endless Battle Clause', 'Exact HP Mod', 'Cancel Mod', 'Team Preview','Mega Rayquaza Clause'],
+		ruleset: ['Pokemon', 'Fusion', 'Sleep Clause Mod', 'Species Clause', 'Nickname Clause', 'OHKO Clause', 'Moody Clause', 'Evasion Moves Clause', 'Endless Battle Clause', 'Exact HP Mod', 'Cancel Mod', 'Team Preview', 'Mega Rayquaza Clause'],
 		banlist: ['Primordial Sea','Desolate Land','Delta Stream','Parental Bond','Shadow Tag','Power Construct','Kangaskhanite','CAP','Red Orb','Blue Orb','Gengarite'],
 		onModifyTemplate: function (template, pokemon) {
 			let pokedex=this.data['Pokedex'];
@@ -66,7 +66,7 @@
 				}
 				let stats={};
 				let new_types=template.types;
-				if(pokedex[template2.speciesid].types!==pokemon.types&!pokemon.transformed) {
+				if(pokedex[template2.speciesid].types!==pokemon.types && !pokemon.transformed) {
 					if(pokedex[template2.speciesid].types[1]!==undefined) {
 						let f=pokedex[template.speciesid].types[0];
 						let s=pokedex[template2.speciesid].types[1];
