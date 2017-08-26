@@ -18,10 +18,6 @@ exports.BattleScripts = {
 				pokemonPool.push(id);
 				}	
 			}
-		let potd;
-		if (Config.potd && 'Rule:potd' in this.getBanlistTable(this.getFormat())) {
-			potd = this.getTemplate(Config.potd);
-		}
 		let typeCount = {};
 		let typeComboCount = {};
 		let baseFormes = {};
@@ -104,26 +100,12 @@ exports.BattleScripts = {
 			break;
 		}
 
-		if (potd && potd.exists) {
-			// The Pokemon of the Day belongs in slot 2
-			if (team.length === 1) {
-				template = potd;
-				if (template.species === 'Magikarp') {
-					template.randomBattleMoves = ['bounce', 'flail', 'splash', 'magikarpsrevenge'];
-				} else if (template.species === 'Delibird') {
-					template.randomBattleMoves = ['present', 'bestow'];
-				}
-			} else if (template.species === potd.species) {
-				continue; // No thanks, I've already got one
-			}
-			}
-
 			let set = this.randomSet(template, template2, i, teamDetails);
 
 
 			let ability = set.ability;
 
-			let item = '';
+			let item;
 			item=set.item;
 			// Make sure forme is legal
 			if (template.battleOnly || template.requiredItems && !template.requiredItems.some(req => toId(req) === item)) {
@@ -136,22 +118,30 @@ exports.BattleScripts = {
 			species2 = template2.name;
 			}
 
-			// Make sure that a base forme does not hold any forme-modifier items.
-			let itemData = this.getItem(item);
-			if (itemData.forcedForme && species === this.getTemplate(itemData.forcedForme).baseSpecies) {
-				do {
-					item = items[this.random(items.length)];
-					itemData = this.getItem(item);
-				} while (itemData.gen > this.gen || itemData.isNonstandard || itemData.forcedForme && species === this.getTemplate(itemData.forcedForme).baseSpecies);
-			}
+			//Make sure that a base forme does not hold any forme-modifier items.
+			// let itemData = this.getItem(item);
+			// if (itemData.forcedForme && species === this.getTemplate(itemData.forcedForme).baseSpecies) {
+				// do {
+					// item = items[this.random(items.length)];
+					// itemData = this.getItem(item);
+				// } while (itemData.gen > this.gen || itemData.isNonstandard || itemData.forcedForme && species === this.getTemplate(itemData.forcedForme).baseSpecies);
+			// }
 
 
 
 			// Four random unique moves from the movepool
 			let incompatibleMoves = ['bellydrum', 'swordsdance', 'calmmind', 'nastyplot','dragondance','quiverdance','shiftgear','shellsmash','honeclaws','tailglow','workup','growth','sharpen','curse','coil','bulkup'];
 			let moves=set.moves;
+			let movesTable={};
 			let move;
 			let moved;
+			
+			//Make sure that set have no repeating moves
+			for(let m in moves)
+			{
+				if(movesTable[m.name]) continue;
+				else movesTable[m.name]=1;
+			}
 			
 			let intersectMoves = moves.filter(moved => incompatibleMoves.includes(moved));
 			if (intersectMoves.length > 1) continue;
@@ -224,8 +214,12 @@ exports.BattleScripts = {
 			let shiny = !this.random(1024);
 
 			//Counters
-			if(this.getItem(item).megaStone)megaCount++;
-			if(megaCount>1) {megaCount=1;continue;}
+			// if(this.getItem(item).megaStone){
+					// megaCount++;
+					// if(megaCount>1) {
+						// continue;
+					// }
+			// }
 			if (item.megaStone) teamDetails['megaStone'] = 1;
 			if (item.zMove) teamDetails['zMove'] = 1;
 			if (ability === 'Snow Warning') teamDetails['hail'] = 1;
@@ -260,7 +254,7 @@ exports.BattleScripts = {
 			i++;
 
 			team.push({
-				name: '+'+template2.speciesid,
+				name: '+'+template2.species,
 				species: template.species,
 				item: item,
 				ability: ability,
@@ -311,7 +305,7 @@ exports.BattleScripts = {
 		let ability = '';
 		let ay;
 		let abilitiesNonFiltered = Object.values((baseTemplate.isMega&baseTemplate.baseSpecies)?baseTemplate.baseSpecies.abilities:baseTemplate.abilities).concat(Object.values(template2.abilities));
-		let abilities =abilitiesNonFiltered.filter(ay => (ay!='Moody'&ay!='Wonder Guard'));
+		let abilities =abilitiesNonFiltered.filter(ay => (ay!='Moody'));
 		let item = '';
 		let evs = {
 			hp: 85,
@@ -940,7 +934,7 @@ exports.BattleScripts = {
 			} else if (ability === 'Limber') {
 				rejectAbility = template.types.includes('Electric');
 			} else if (ability === 'Liquid Voice') {
-				rejectAbility = !hasMove['hypervoice'];
+				rejectAbility = !hasMove['hypervoice']&!hasMove['boomburst'];
 			} else if (ability === 'Overgrow') {
 				rejectAbility = !counter['Grass'];
 			} else if (ability === 'Poison Heal') {
@@ -983,29 +977,30 @@ exports.BattleScripts = {
 				rejectAbility = !counter['recovery'] && !counter['drain'];
 			} else if (ability === 'Unburden') {
 				rejectAbility = !counter.setupType && !hasMove['acrobatics'];
-			} else if (ability === 'Wonder Guard') {
+			} else if (ability === 'Wonder Guard'&&template.speciesid!='shedinja') {
 				rejectAbility = true;
 			} else if (ability === 'Moody') {
 				rejectAbility = true;
 			} else if (ability === 'Multitype') {
-				rejectAbility = template.species!='Arceus'&template.baseSpecies!='Arceus';
+				rejectAbility = template.speciesid!='arceus'&&template.baseSpecies!='Arceus';
 			} else if (ability === 'RKS System') {
-				rejectAbility = template.baseSpecies!='Silvally'&template.species!='Silvally';
-				console.log(rejectAbility);
+				rejectAbility = template.baseSpecies!='Silvally'&&template.speciesid!='silvally';
 			} else if (ability === 'Stance Change') {
-			  rejectAbility = template.species!='Aegislash';
+			  rejectAbility = template.speciesid!='aegislash';
 			} else if (ability === 'Disguise') {
-			  rejectAbility = template.species!='Mimikyu';
+			  rejectAbility = template.speciesid!='mimikyu';
 			} else if (ability === 'Shields Down') {
-			  rejectAbility = template.species!='Minior';
+			  rejectAbility = template.speciesid!='minior';
 			} else if (ability === 'Forecast') {
-			  rejectAbility = template.species!='Castform';
+			  rejectAbility = template.speciesid!='castform';
 			} else if (ability === 'Contrary') {
 			 rejectAbility = (!moves.includes('shellsmash'))?counter['physicalsetup']|counter['mixedsetupsetup']|counter['specialsetup']|counter['speedsetup']|counter['defensesetup']:false;
 			} else if (ability === 'Battle Bond') {
-			  rejectAbility = template.species!='Greninja';
+			  rejectAbility = template.speciesid!='greninja';
 			} else if (ability === 'Flower Gift') {
-			  rejectAbility = template.species!='Cherrim';
+			  rejectAbility = template.speciesid!='cherrim';
+			} else if (ability === 'Power Construct') {
+			  rejectAbility = template.speciesid!='zygarde'&template.speciesid!='zygarde10';
 			} 
 			if (rejectAbility) {
 				if((abilities[abilities.indexOf(ability)+1].rating>=1))
@@ -1019,7 +1014,7 @@ exports.BattleScripts = {
 			if (abilities.includes('Guts') && ability !== 'Quick Feet' && (hasMove['facade'] || hasMove['protect'] || (hasMove['rest'] && hasMove['sleeptalk']))) {
 				ability = 'Guts';
 			}
-			if (abilities.includes('Liquid Voice') && hasMove['hypervoice']) {
+			if (abilities.includes('Liquid Voice') && (hasMove['hypervoice']|hasMove['boomburst'])) {
 				ability = 'Liquid Voice';
 			}
 			if (abilities.includes('Marvel Scale') && hasMove['rest'] && hasMove['sleeptalk']) {
@@ -1040,6 +1035,9 @@ exports.BattleScripts = {
 			if (abilities.includes('Water Bubble') && counter['Water']) {
 				ability = 'Water Bubble';
 			}
+			if (abilities.includes('Cheeck Pouch') && hasMove['recycle']) {
+				ability = 'Cheeck Pouch';
+			}
 		}
 
 		if (hasMove['rockclimb'] && ability !== 'Sheer Force') {
@@ -1048,17 +1046,20 @@ exports.BattleScripts = {
 		if (hasMove['thunderpunch'] && ability === 'Galvanize') {
 			moves[moves.indexOf('thunderpunch')] = 'return';
 		}
-		if (hasMove['wildcharge'] && ability === 'Galvanize'&!hasMove['return']) {
+		if (hasMove['wildcharge'] && ability === 'Galvanize'&&!hasMove['return']) {
 			moves[moves.indexOf('wildcharge')] = 'return';
 		}
 
 		item = 'Leftovers';
-		if (template.requiredItems|template2.requiredItems) {
+		if (template.requiredItems||template2.requiredItems) {
 			if (hasMove['judgment']) {
 				// Judgment doesn't change type with Z-Crystals
 				item = template.requiredItems?template.requiredItems[0]:template2.requiredItems[0];
 			} else if(template.requiredItems) {
 				item = template.requiredItems[this.random(template.requiredItems.length)];
+				}
+				else if(template2.requiredItems) {
+				item = template2.requiredItems[this.random(template2.requiredItems.length)];
 				}
 			}
 		else if (hasMove['magikarpsrevenge']) {
@@ -1071,10 +1072,12 @@ exports.BattleScripts = {
 		// First, the extra high-priority items
 		} else if (template.species === 'Clamperl' && !hasMove['shellsmash']) {
 			item = 'Deep Sea Tooth';
+		} else if (template.species === 'Shedinja') {
+			item = 'Focus Sash';
 		} else if ((template.species === 'Cubone' || template.baseSpecies === 'Marowak' )&& counter['Physical']>0) {
 			item = 'Thick Club';
 		} else if (ability === 'Cheeck Pouch') {
-			item = 'Sitrus Berry';
+			item = ['Salac', 'Sitrus'][this.random(2)] + ' Berry';
 		} else if (baseStatsFusion.hp+baseStatsFusion.def+baseStatsFusion.spd<=90) {
 			item = (slot === 0 && hasMove['stealthrock']) ? 'Focus Sash' : 'Life Orb';
 		} else if (template.species === 'Farfetch\'d') {
@@ -1089,7 +1092,7 @@ exports.BattleScripts = {
 			item = 'Aloraichium Z';
 		} else if (ability === 'Imposter'&baseStatsFusion.hp<100) {
 			item = 'Choice Scarf';
-		} else if (ability === 'Klutz' && hasMove['switcheroo']) {
+		} else if (ability === 'Klutz' && (hasMove['switcheroo']||hasMove['trick'])) {
 			// To perma-taunt a Pokemon by giving it Assault Vest
 			item = 'Assault Vest';
 		} else if (hasMove['conversion']) {
@@ -1427,5 +1430,5 @@ exports.BattleScripts = {
 		}
 
 		return counter;
-	},
+	}
 };

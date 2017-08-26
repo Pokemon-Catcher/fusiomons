@@ -164,18 +164,21 @@ exports.BattleFormats = {
 						{
 						if((TeamValidator('gen7ou').checkLearnset(this.getMove(moves[z]).id, !template1.learnset? originTemplate1.species:template1.species, lsetData))&(TeamValidator('gen7ou').checkLearnset(this.getMove(moves[z]).id), !template2.learnset? originTemplate2.species:template2.species, lsetData)) problems.push(""+set.species+" has illegal move: "+moves[z]);
 						}
+					if(ability.id=='powerconstruct'&&(template.speciesid=='zygarde'||template.speciesid=='zygarde10'))  template1=this.getTemplate('zygardecomplete');
+					if(ability.id=='schooling'&&template.speciesid=='wishiwashi') template1=this.getTemplate('wishiwashi-school');
 					for(let a in template1.baseStats)
 						{
 						StatsSum0+=(this.getItem(set.item).megaEvolves==set.species)?this.getTemplate(this.getItem(set.item).megaStone).baseStats[a]:template1.baseStats[a];
 						
 						StatsSum1+=template2.baseStats[a];
 						}
-				if(ability.id=='hugepower'|ability.id=='purepower') {StatsSum0+=template1.baseStats.atk;StatsSum1+=template2.baseStats.atk;}
+				if(ability.id=='hugepower'||ability.id=='purepower') {StatsSum0+=template1.baseStats.atk;StatsSum1+=template2.baseStats.atk;}
+				if(ability.id=='furcoat') {StatsSum0+=template1.baseStats.def;StatsSum1+=template2.baseStats.def;}
 					if(template1!=template2&(StatsSum0+StatsSum1)/2>600|(template1.tier=='Uber'&template2.tier=='Uber'))
 						{
 						problems.push("Fusion of "+template1.species+" and "+template2.species+" is banned, because"+(((StatsSum0+StatsSum1)/2>600)?' sum of stats is higher than 600':((template1.tier=='Uber'&template2.tier=='Uber')?(' they are both Uber'):'')));
 						}
-					if(template2.battleOnly)
+					if(template2.battleOnly&&template2.species!='Wishiwashi-School')
 					{
 					problems.push("Fusion of "+template2.species+" is banned, because this is battle forme");
 					}
@@ -190,19 +193,33 @@ exports.BattleFormats = {
 				if (template1.tier=='Uber') problems.push(""+set.species+" in Uber which is banned");
 				}
 				//Complicate Banlist
-				if(ability.id=='speedboost'&((StatsSum0+StatsSum1)/2>500|set.item=='medichamite'|set.item=='mawilite')) problems.push(''+ability.name+ ' + sum of stats >500 or Medichamite/Mawilite' + ' is banned');
+				//if(ability.id=='speedboost'&((StatsSum0+StatsSum1)/2>500|set.item=='medichamite'|set.item=='mawilite')) problems.push(''+ability.name+ ' + sum of stats >500 or Medichamite/Mawilite' + ' is banned');
+				//if(ability.id=='imposter'&template1!=template2)problems.push('Imposter is legal only for Ditto');
 				//if((ability.id=='purepower'|ability.id=='hugepower')&((StatsSum0+StatsSum1)/2>500)) problems.push(''+ability.name+ ' + sum of stats >500' + ' is banned');
-				if(ability.id=='wonderguard'&(template1.speciesid!='shedinja'|(template2.speciesid!='shedinja'&template2.exists))) problems.push(''+ability.name+ ' is legal only for Shedinja');
+				if(template2!=template1&template2.exists)
+				{
+					switch(ability.id)
+					{
+						case 'speedboost': case 'protean': case 'fluffy': case 'arenatrap':
+					    problems.push('Ability ' + ability.name + ' is banned in fusions');
+						break;
+						case 'imposter':
+						if(set.item.id=='eviolite') problems.push('Ability ' + ability.name + ' in combination with Eviolite is banned');
+						break;
+					}
+				}
+				if(ability.id=='wonderguard'&&template1.speciesid!='shedinja') problems.push(''+ability.name+ ' is legal only for Shedinja');
 				//Pokemons' Banlist
-				if(this.getTemplate(set.species).tier=='Illegal') return [ ""+set.species+' is illegal']
-				if(this.getTemplate(set.species).tier=='Unreleased') return [ ""+set.species+' is unreleased']
-				if((set.species==='Rayquaza'|this.getTemplate(set.species).baseSpecies=='Rayquaza')&set.moves.includes('dragonascent')) return [ 'Rayquaza-Mega is banned']
+				if(this.getTemplate(set.species).tier=='Illegal') return [ "" + set.species + ' is illegal']
+				if(this.getTemplate(set.species).tier=='Unreleased') return [ "" + set.species + ' is unreleased']
 				//Moves' Banlist
 				for(let z in moves)
 					{
 					let move=this.getMove(moves[z]);
-					if(moves[z]=='vcreate'&ability.id=='contrary') problems.push('Combination of '+ move.name + ' and ' + ability.name + ' is banned');
-					if(move.status=='slp'&(ability.id=='noguard'|(abilityAfterMega&&abilityAfterMega.id=='noguard'))) problems.push('Combination of '+ move.name + ' and No Guard is banned');
+					if(moves[z]=='vcreate'&&ability.id=='contrary') problems.push('Combination of '+ move.name + ' and ' + ability.name + ' is banned');
+					if(moves[z]=='sleeptalk'&&ability.id=='comatose') problems.push('Combination of '+ move.name + ' and ' + ability.name + ' is banned');
+					if((moves[z]=='nightshade'||moves[z]=='seismictoss'||moves[z]=='psywave')&(abilityAfterMega=='parentalbond'||ability=='parentalbond')) problems.push('Combination of '+ move.name + ' and Parental Bond is banned');
+					if(move.accuracy<100&move.status=='slp'&(ability.id=='noguard'||(abilityAfterMega&&abilityAfterMega.id=='noguard'))) problems.push('Combination of '+ move.name + ' and No Guard is banned');
 					}
 					return problems;
 		},
@@ -312,6 +329,9 @@ exports.BattleFormats = {
 			}
 			this.add('html',` <div style="padding: 0px 0px 0px 0px;margin-Bottom: 8px;margin-Left: 15px;margin-Top=0";fontSize=12><font color=#993364> ${pokemonlist2.join(' / ')}</font></div>`);
 			},
+			onTeamPreview: function () {
+			this.makeRequest('teampreview');
+		},
 	},
 	
 	}
