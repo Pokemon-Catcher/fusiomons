@@ -1,9 +1,27 @@
-{
+	{
 		name: "[Gen 7] Fusionmons Random Battle",
 		desc: ["Battle of random pokemon fusions"],
 		mod: 'fusiomons',
 		team: 'random',
 		ruleset: ['Pokemon', 'Fusion', 'Sleep Clause Mod', 'HP Percentage Mod', 'Cancel Mod'],
+		onAfterMega: function (pokemon) {
+			pokemon.removeVolatile('hybride');
+			let d=this.data['Pokedex'];
+			let name=pokemon.name.substring(1,20);
+			let template = this.getTemplate(d[pokemon.speciesid].otherFormes[0]);
+			let template2 = this.getTemplate(pokemon.name.substring(1,20));
+			if(!template2.exists)
+			{
+				name=pokemon.species;
+				template2 =  template;
+			}
+			let stats={};
+			for(let stat in pokemon.template.baseStats)
+				{
+				stats[stat]=(d[template.speciesid].baseStats[stat]+d[template2.speciesid].baseStats[stat])/2;
+				}
+			pokemon.baseStats=this.spreadModify(stats, pokemon.set);
+		},
 		onModifyTemplate: function (template, pokemon) {
 			let pokedex=this.data['Pokedex'];
 			let name=pokemon.species;
@@ -33,25 +51,43 @@
 				if(new_types.f===new_types.s) delete new_types.s;
 				let temple=template;
 				pokemon.removeVolatile('hybride');
-			if (template2.exists && template2!==pokemon.baseTemplate && !pokemon.getVolatile('hybride') && !pokemon.transformed) {
+			if (template2.exists && template2!==pokemon.baseTemplate && !pokemon.transformed) {
 				for(let stat in template.baseStats) {
-					stats[stat]=(pokedex[pokemon.template.speciesid].baseStats[stat]+pokedex[template2.speciesid].baseStats[stat])/2;
+					stats[stat]=(pokedex[template.speciesid].baseStats[stat]+pokedex[template2.speciesid].baseStats[stat])/2;
 				}
+				let new_stats=this.spreadModify(stats, pokemon.set);
 				temple.baseStats=stats;
+				temple.stats=new_stats;
 				temple.weightkg=(pokedex[pokemon.template.speciesid].weightkg+pokedex[template2.speciesid].weightkg)/2;
-				console.log(''+temple.weightkg+'- ModifyTemplate');
-			}
-			temple.types=Object.values(new_types);
-			return temple;
+				}
+		temple.types=Object.values(new_types);
+		return temple;
 		},
 	},
 	{
 		name: "[Gen 7] Fusionmons",
 		desc: ["Battle of pokemon fusions",],
-
 		mod: 'fusiomons',
-		ruleset: ['Pokemon', 'Fusion', 'Sleep Clause Mod', 'Species Clause', 'Nickname Clause', 'OHKO Clause', 'Moody Clause', 'Evasion Moves Clause', 'Endless Battle Clause', 'Exact HP Mod', 'Cancel Mod', 'Team Preview', 'Mega Rayquaza Clause'],
+		ruleset: ['Pokemon', 'Fusion', 'Sleep Clause Mod', 'Species Clause', 'Nickname Clause', 'OHKO Clause', 'Moody Clause', 'Evasion Moves Clause', 'Endless Battle Clause', 'Exact HP Mod', 'Cancel Mod', 'Mega Rayquaza Clause', 'Team Preview'],
 		banlist: ['Shadow Tag', 'CAP', 'Gengarite'],
+		onAfterMega: function (pokemon) {
+			pokemon.removeVolatile('hybride');
+			let d=this.data['Pokedex'];
+			let name=pokemon.name.substring(1,20);
+			let template = this.getTemplate(d[pokemon.speciesid].otherFormes[0]);
+			let template2 = this.getTemplate(pokemon.name.substring(1,20));
+			if(!template2.exists)
+			{
+				name=pokemon.species;
+				template2 =  template;
+			}
+			let stats={};
+			for(let stat in pokemon.template.baseStats)
+				{
+				stats[stat]=(d[template.speciesid].baseStats[stat]+d[template2.speciesid].baseStats[stat])/2;
+				}
+			pokemon.baseStats=this.spreadModify(stats, pokemon.set);
+		},
 		onModifyTemplate: function (template, pokemon) {
 			let pokedex=this.data['Pokedex'];
 			let name=pokemon.species;
@@ -81,13 +117,14 @@
 				if(new_types.f===new_types.s) delete new_types.s;
 				let temple=template;
 				pokemon.removeVolatile('hybride');
-			if (template2.exists && template2!==pokemon.baseTemplate && !pokemon.getVolatile('hybride') && !pokemon.transformed) {
+			if (template2.exists && template2!==pokemon.baseTemplate && !pokemon.transformed) {
 				for(let stat in template.baseStats) {
-					stats[stat]=(pokedex[pokemon.template.speciesid].baseStats[stat]+pokedex[template2.speciesid].baseStats[stat])/2;
+					stats[stat]=(pokedex[template.speciesid].baseStats[stat]+pokedex[template2.speciesid].baseStats[stat])/2;
 				}
+				let new_stats=this.spreadModify(stats, pokemon.set);
 				temple.baseStats=stats;
+				temple.stats=new_stats;
 				temple.weightkg=(pokedex[pokemon.template.speciesid].weightkg+pokedex[template2.speciesid].weightkg)/2;
-
 				}
 		temple.types=Object.values(new_types);
 		return temple;

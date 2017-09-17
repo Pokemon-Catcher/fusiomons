@@ -155,14 +155,14 @@ exports.BattleFormats = {
 			let originTemplate1=this.getTemplate(template1.baseSpecies);
 			let originTemplate2=this.getTemplate(template2.baseSpecies);
 			if(template1.isMega) abilityList=Object.values(template1.abilities).concat(Object.values(originTemplate1.abilities)); else abilityList=Object.values(template1.abilities);
-			if(template1!=undefined&template2!=undefined&template1!=null&template2!=null&template1!=template2)
+			if(template1!=undefined&&template2!=undefined&&template1!=null&&template2!=null&&template1!=template2)
 				{
 				abilityList=abilityList.concat(Object.values(template2.abilities));
 				if(template2.isMega) problems.push("Using Mega-Pokemons in fusion is banned");
 					if ((!abilityList.includes(ability.name))) problems.push(""+set.species+" has illegal ability: "+ ability.name);
 					for (let z in moves) 
 						{
-						if((TeamValidator('gen7ou').checkLearnset(this.getMove(moves[z]).id, !template1.learnset? originTemplate1.species:template1.species, lsetData))&(TeamValidator('gen7ou').checkLearnset(this.getMove(moves[z]).id), !template2.learnset? originTemplate2.species:template2.species, lsetData)) problems.push(""+set.species+" has illegal move: "+moves[z]);
+						if((TeamValidator('gen7ou').checkLearnset(this.getMove(moves[z]).id, !template1.learnset? originTemplate1.species:template1.species, lsetData))&(TeamValidator('gen7ou').checkLearnset(this.getMove(moves[z]).id, !template2.learnset? originTemplate2.species:template2.species, lsetData))) problems.push(""+set.species+" has illegal move: "+moves[z]);
 						}
 					if(ability.id=='powerconstruct'&&(template.speciesid=='zygarde'||template.speciesid=='zygarde10'))  template1=this.getTemplate('zygardecomplete');
 					if(ability.id=='schooling'&&template.speciesid=='wishiwashi') template1=this.getTemplate('wishiwashi-school');
@@ -208,10 +208,11 @@ exports.BattleFormats = {
 						break;
 					}
 				}
-				if(ability.id=='wonderguard'&&template1.speciesid!='shedinja') problems.push(''+ability.name+ ' is legal only for Shedinja');
+				if(ability.id=='wonderguard'&&template1.speciesid!='shedinja'&&template2.speciesid!='shedinja') problems.push(''+ability.name+ ' is legal only for Shedinja');
 				//Pokemons' Banlist
 				if(this.getTemplate(set.species).tier=='Illegal') return [ "" + set.species + ' is illegal']
 				if(this.getTemplate(set.species).tier=='Unreleased') return [ "" + set.species + ' is unreleased']
+				if(originTemplate1.speciesid=='deoxys'||originTemplate2.speciesid=='deoxys'||template1.speciesid=='deoxys'||template2.speciesid=='deoxys') problems.push('Deoxys is banned');
 				//Moves' Banlist
 				for(let z in moves)
 					{
@@ -232,7 +233,7 @@ exports.BattleFormats = {
 	{
 	effectType: 'Rule',
 	name: 'Fusion',
-		onUpdate: function (pokemon) {		
+	onUpdate: function (pokemon) {		
 			if(pokemon.name!=undefined)
 			{
 				let d=this.data['Pokedex'];
@@ -243,20 +244,10 @@ exports.BattleFormats = {
 					name=pokemon.species;
 					template2 =  pokemon.template;
 				}
-				if(this.getTemplate(pokemon.name.substring(1,20)).exists&pokemon.species!=this.getTemplate(pokemon.name.substring(1,20))&!pokemon.getVolatile('hybride')&!pokemon.transformed)
+				
+				if(this.getTemplate(pokemon.name.substring(1,20)).exists&&pokemon.species!=this.getTemplate(pokemon.name.substring(1,20))&&!pokemon.getVolatile('hybride')&&!pokemon.transformed)
 					{
 					let new_types=d[pokemon.template.speciesid].types;
-					if(pokemon.template.isMega&!pokemon.getVolatile('megafusion'))
-						{	
-						let stats={};
-						for(let stat in pokemon.template.baseStats)
-							{
-							stats[stat]=(d[pokemon.template.speciesid].baseStats[stat]+d[template2.speciesid].baseStats[stat])/2;
-							}
-						pokemon.addVolatile('megafusion');
-						let new_stats=this.spreadModify(stats, pokemon.set);
-						pokemon.baseStats=new_stats;
-						}
 					if(d[template2.speciesid].types!=pokemon.types&!pokemon.transformed)
 						{
 						if(d[template2.speciesid].types[1]!=undefined)
@@ -296,7 +287,7 @@ exports.BattleFormats = {
 					pokemon.addVolatile('hybride');
 					}
 			}
-		},
+		}
 	},
 	teampreview: {
 		effectType: 'Rule',

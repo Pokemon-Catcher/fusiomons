@@ -2,9 +2,11 @@
 
 exports.BattleScripts = {
 	inherit: 'gen7',
+
+	
 	randomTeam: function (side) {
 		let excludedTiers = {'NFE':1,'LC Uber':1, 'LC':1};
-		let allowedNFE = {'Chansey':1, 'Doublade':1, 'Gligar':1, 'Porygon2':1, 'Scyther':1, 'Togetic':1,'Dusclops':1,'Yanma':1};
+		let allowedNFE = {'Chansey':1, 'Doublade':1, 'Gligar':1, 'Porygon2':1, 'Scyther':1, 'Togetic':1};
 		let team = [];
 		let natures = Object.keys(this.data.Natures);
 		let items = Object.keys(this.data.Items);
