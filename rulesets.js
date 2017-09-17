@@ -212,7 +212,7 @@ exports.BattleFormats = {
 				//Pokemons' Banlist
 				if(this.getTemplate(set.species).tier=='Illegal') return [ "" + set.species + ' is illegal']
 				if(this.getTemplate(set.species).tier=='Unreleased') return [ "" + set.species + ' is unreleased']
-				if((originTemplate1.speciesid=='deoxys'||originTemplate2.speciesid=='deoxys'||template1.speciesid=='deoxys'||template2.speciesid=='deoxys')&(template1.speciesid!='deoxys-defense'||template2.speciesid!='deoxys-defense')) problems.push('Only Deoxys-Defense is allowed');
+				if((originTemplate1.speciesid=='deoxys'||originTemplate2.speciesid=='deoxys'||template1.speciesid=='deoxys'||template2.speciesid=='deoxys')&(template1.speciesid!='deoxys-defense'&template2.speciesid!='deoxys-defense')) problems.push('Only Deoxys-Defense is allowed');
 				//Moves' Banlist
 				for(let z in moves)
 					{
