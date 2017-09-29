@@ -68,8 +68,8 @@
 		name: "[Gen 7] Fusionmons",
 		desc: ["Battle of pokemon fusions",],
 		mod: 'fusiomons',
-		ruleset: ['Pokemon', 'Fusion', 'Sleep Clause Mod', 'Species Clause', 'Nickname Clause', 'OHKO Clause', 'Moody Clause', 'Evasion Moves Clause', 'Endless Battle Clause', 'Exact HP Mod', 'Cancel Mod', 'Mega Rayquaza Clause', 'Team Preview'],
-		banlist: ['Shadow Tag', 'CAP', 'Gengarite'],
+		ruleset: ['Pokemon', 'Fusion', 'Sleep Clause Mod', 'Species Clause', 'Nickname Clause', 'OHKO Clause', 'Moody Clause', 'Evasion Moves Clause', 'Endless Battle Clause', 'Exact HP Mod', 'Cancel Mod', 'Team Preview'],
+		banlist: ['Shadow Tag', 'CAP', 'Gengarite', 'Baton Pass'],
 		onAfterMega: function (pokemon) {
 			pokemon.removeVolatile('hybride');
 			let d=this.data['Pokedex'];
@@ -91,6 +91,7 @@
 		onModifyTemplate: function (template, pokemon) {
 			let pokedex=this.data['Pokedex'];
 			let name=pokemon.species;
+			let template1 = template;
 			let template2 = pokemon.baseTemplate;
 				if(pokemon.name !== undefined) {
 					name=pokemon.name.substring(1,20);
@@ -100,26 +101,32 @@
 					name=pokemon.species;
 					template2 =  pokemon.baseTemplate;
 				}
+				
+				if (template.num === 493) {
+				// Arceus formes
+				let item = Dex.getItem(pokemon.item);
+				template1 = this.getTemplate(item && item.onPlate && this.getAbility(pokemon.ability).id=='multitype'? 'Arceus-' + item.onPlate : 'Arceus');
+				}			
 				let stats={};
-				let new_types=template.types;
+				let new_types=template1.types;
 				if(pokedex[template2.speciesid].types!==pokemon.types && !pokemon.transformed) {
 					if(pokedex[template2.speciesid].types[1]!==undefined) {
-						let f=pokedex[template.speciesid].types[0];
+						let f=pokedex[template1.speciesid].types[0];
 						let s=pokedex[template2.speciesid].types[1];
 						new_types={f,s};
 					}
 					else {
-						let f=pokedex[template.speciesid].types[0];
+						let f=pokedex[template1.speciesid].types[0];
 						let s=pokedex[template2.speciesid].types[0];
 						new_types={f,s};
 					}
 				}
 				if(new_types.f===new_types.s) delete new_types.s;
-				let temple=template;
+				let temple=template1;
 				pokemon.removeVolatile('hybride');
 			if (template2.exists && template2!==pokemon.baseTemplate && !pokemon.transformed) {
 				for(let stat in template.baseStats) {
-					stats[stat]=(pokedex[template.speciesid].baseStats[stat]+pokedex[template2.speciesid].baseStats[stat])/2;
+					stats[stat]=(pokedex[template1.speciesid].baseStats[stat]+pokedex[template2.speciesid].baseStats[stat])/2;
 				}
 				let new_stats=this.spreadModify(stats, pokemon.set);
 				temple.baseStats=stats;

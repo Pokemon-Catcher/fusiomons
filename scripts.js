@@ -727,6 +727,9 @@ exports.BattleScripts = {
 				case 'scald':
 					if (hasMove['liquidation'] || hasMove['waterfall'] || hasMove['waterpulse']) rejected = true;
 					break;
+				case 'hyperspacefury':
+					if (template.speciesid!='hoopaunbound') rejected = true;
+					break;
 
 				// Status:
 				case 'raindance':
@@ -979,14 +982,14 @@ exports.BattleScripts = {
 				rejectAbility = !counter['recovery'] && !counter['drain'];
 			} else if (ability === 'Unburden') {
 				rejectAbility = !counter.setupType && !hasMove['acrobatics'];
-			} else if (ability === 'Wonder Guard'&&template.speciesid!='shedinja') {
+			} else if (ability === 'Wonder Guard'&(template.speciesid!='shedinja'|template2.speciesid!='shedinja')) {
 				rejectAbility = true;
 			} else if (ability === 'Moody') {
 				rejectAbility = true;
 			} else if (ability === 'Multitype') {
-				rejectAbility = template.speciesid!='arceus'&&template.baseSpecies!='Arceus';
+				rejectAbility = template.speciesid!='arceus'&template.baseSpecies!='Arceus';
 			} else if (ability === 'RKS System') {
-				rejectAbility = template.baseSpecies!='Silvally'&&template.speciesid!='silvally';
+				rejectAbility = template.baseSpecies!='Silvally'&template.speciesid!='silvally';
 			} else if (ability === 'Stance Change') {
 			  rejectAbility = template.speciesid!='aegislash';
 			} else if (ability === 'Disguise') {
@@ -1072,11 +1075,11 @@ exports.BattleScripts = {
 			item = 'Air Balloon';
 
 		// First, the extra high-priority items
-		} else if (template.species === 'Clamperl' && !hasMove['shellsmash']) {
+		} else if ((template.species === 'Clamperl'||template2.species === 'Clamperl') && !hasMove['shellsmash']) {
 			item = 'Deep Sea Tooth';
 		} else if (template.species === 'Shedinja') {
 			item = 'Focus Sash';
-		} else if ((template.species === 'Cubone' || template.baseSpecies === 'Marowak' )&& counter['Physical']>0) {
+		} else if ((template.species === 'Cubone' || template.baseSpecies === 'Marowak'||template2.baseSpecies === 'Marowak'||template2.baseSpecies === 'Cubone')&& counter['Physical']>0) {
 			item = 'Thick Club';
 		} else if (ability === 'Cheeck Pouch') {
 			item = ['Salac', 'Sitrus'][this.random(2)] + ' Berry';
