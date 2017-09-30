@@ -178,11 +178,12 @@ exports.BattleFormats = {
 					if(set.item.id=='blueorb'&&template.speciesid=='kyogre')  template1=this.getTemplate('kyogreprimal');
 					if(moves.includes('dragonascent')&&template.speciesid=='rayquaza')  template1=this.getTemplate('rayquazamega');
 					if(ability.id=='schooling'&&template.speciesid=='wishiwashi') template1=this.getTemplate('wishiwashi-school');
-					let stats=template2.baseStats;
-					for(let stat in stats)
+					let stats={};
+					for(let stat in template2.baseStats)
 					{
+						stats[stat]=template2.baseStats[stat];
 						stats[stat]=(stats[stat]+((this.getItem(set.item).megaEvolves==set.species)?this.getTemplate(this.getItem(set.item).megaStone).baseStats[stat]:template1.baseStats[stat]))/2;
-						if(ability.id=='hugepower'||ability.id=='purepower'||(abilityAfterMega&&(abilityAfterMega.id=='purepower'||abilityAfterMega.id=='hugepower'))&&stat=='atk') stats[stat]*=2;
+						if((ability.id=='hugepower'||ability.id=='purepower'||(abilityAfterMega&&(abilityAfterMega.id=='purepower'||abilityAfterMega.id=='hugepower')) )&&stat=='atk') stats[stat]*=2;
 						if(ability.id=='furcoat'&&stat=='def') stats[stat]*=2;
 						stats[stat]=Math.floor(stats[stat]);
 					}
