@@ -30,6 +30,10 @@ exports.BattleFormats = {
 			}
 		},
 		onValidateSet: function (set, format) {
+			let doublesUbers =['Arceus', 'Dialga', 'Giratina', 'Giratina-Origin', 'Groudon', 'Ho-Oh', 'Jirachi', 'Kyogre', 'Kyurem-White',
+			'Lugia', 'Lunala', 'Magearna', 'Mewtwo', 'Palkia', 'Rayquaza', 'Reshiram', 'Solgaleo', 'Xerneas', 'Yveltal', 'Zekrom'];
+			let legalTiers = format.legaltiers;
+			let gameType = format.gameType;
 		 	let item = this.getItem(set.item);
 			let template = this.getTemplate(set.species);
 			let problems = [];
@@ -37,7 +41,6 @@ exports.BattleFormats = {
 			let template1 = this.getTemplate(set.species);
 			let name=set.species;
 			let template2 = template1;
-
 			if ((template.num === 25 || template.num === 172) && template.tier === 'Illegal') {
 				problems.push(set.species + ' does not exist outside of gen ' + template.gen + '.');
 			}
@@ -189,9 +192,9 @@ exports.BattleFormats = {
 					}
 					let b, c;
 					let BST=Object.values(stats).reduce((b,c) =>(b+c));
-					if(template1!=template2&BST>600|(template1.tier=='Uber'&template2.tier=='Uber'))
+					if(template1!=template2&BST>600||(template1.tier=='Uber'&template2.tier=='Uber'&&gameType!='doubles')||(doublesUbers.includes(template1.species)&&doublesUbers.includes(template2.species)&&gameType=='doubles'))
 						{
-						problems.push("Fusion of "+template1.species+" and "+template2.species+" is banned, because"+((BST>600)?' sum of stats is higher than 600':((template1.tier=='Uber'&template2.tier=='Uber')?(' they are both Uber'):'')));
+						problems.push("Fusion of "+template1.species+" and "+template2.species+" is banned, because"+((BST>600)?' sum of stats is higher than 600':' they are both Uber'));
 						}
 					if(template2.battleOnly&&template2.species!='Wishiwashi-School')
 					{
@@ -205,8 +208,8 @@ exports.BattleFormats = {
 					{
 					if(TeamValidator('gen7ou').checkLearnset(this.getMove(moves[z]).id, !template1.learnset? originTemplate1.species:template1.species, lsetData)) problems.push(""+set.species+" has illegal move: "+moves[z]);
 					}
-				if (template1.tier=='Uber') problems.push(""+set.species+" in Uber which is banned");
-				}
+				if ((template1.tier=='Uber'&&gameType!='doubles')||(doublesUbers.includes(template1.species)&&gameType=='doubles')) problems.push(""+set.species+" in Uber which is banned");
+				 }
 				//Complicate Banlist
 				//if(ability.id=='speedboost'&((StatsSum0+StatsSum1)/2>500|set.item=='medichamite'|set.item=='mawilite')) problems.push(''+ability.name+ ' + sum of stats >500 or Medichamite/Mawilite' + ' is banned');
 				//if(ability.id=='imposter'&template1!=template2)problems.push('Imposter is legal only for Ditto');
@@ -215,15 +218,18 @@ exports.BattleFormats = {
 				{
 					switch(ability.id)
 					{
-						case 'speedboost': case 'protean': case 'fluffy': case 'arenatrap': case 'simple': case 'imposter': case 'wonderguard':
+						case 'protean': case 'fluffy': case 'simple': case 'imposter': case 'wonderguard':
 					    problems.push('Ability ' + ability.name + ' is banned in fusions');
+						break;
+						case 'speedboost':
+						if(gameType!='doubles') problems.push('Ability ' + abilityAfterMega.name + ' is banned in fusions');
 						break;
 					}
 					if(abilityAfterMega){
 						switch(abilityAfterMega.id)
 						{
 							case 'speedboost':
-							problems.push('Ability ' + abilityAfterMega.name + ' is banned in fusions');
+							if(gameType!='doubles') problems.push('Ability ' + abilityAfterMega.name + ' is banned in fusions');
 							break;
 						}
 					}
@@ -231,6 +237,7 @@ exports.BattleFormats = {
 				//Pokemons' Banlist
 				if(template1.tier=='Illegal'|template2.tier=='Illegal'|template1.tier=='CAP'|template2.tier=='CAP') return [ "" + set.species + ' is illegal'];
 				if((originTemplate1.speciesid=='deoxys'||originTemplate2.speciesid=='deoxys'||template1.speciesid=='deoxys'||template2.speciesid=='deoxys')&(template1.speciesid!='deoxysdefense'&template2.speciesid!='deoxysdefense')) problems.push('Only Deoxys-Defense is allowed');
+				if(legalTiers&&(!legalTiers.includes(template1.tier)|!legalTiers.includes(template2.tier)|(item.megaEvolves!=undefined&&!legalTiers.includes(this.getTemplate(item.megaStone).tier)))) problems.push('Fusion of ' +template1.species+' contains illegal tier');
 				//Moves' Banlist
 				for(let z in moves)
 					{
@@ -257,6 +264,7 @@ exports.BattleFormats = {
 			{
 				let d=this.data['Pokedex'];
 				let name=pokemon.name.substring(1,20);
+				let template = this.getTemplate(pokemon.species);
 				let template2 = this.getTemplate(pokemon.name.substring(1,20));
 				if(!template2.exists)
 				{
@@ -292,6 +300,7 @@ exports.BattleFormats = {
 						this.add('html', `<b>${""+pokemon.species+" + "+d[template2.speciesid].species+' base stats:'}</b>`);
 						if(template2.exists)
 							{
+							if(template.num<152&&template2.num<152) this.add('html',`<details><summary>Спрайт</summary><p><img src="http://images.alexonsager.net/pokemon/fused/${template['num']}/${template['num']}.${template2.num}.png" width="100" height="100"></p></details>`);
 							let baseStatsFusion={};
 							for(let i in pokemon.baseStats)
 								{

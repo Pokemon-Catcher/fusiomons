@@ -34,6 +34,13 @@
 					name=pokemon.species;
 					template2 =  pokemon.baseTemplate;
 				}
+				let item = Dex.getItem(pokemon.item);
+				if (template.num === 493) {
+				// Arceus formes
+				template1 = this.getTemplate(item && item.onPlate && this.getAbility(pokemon.ability).id=='multitype'? 'Arceus-' + item.onPlate : 'Arceus');
+				} else if(template.num === 773) {
+					template1 = this.getTemplate(item && item.onMemory && this.getAbility(pokemon.ability).id=='rkssystem'? 'Silvally-' + item.onPlate : 'Silvally');
+				}		
 				let stats={};
 				let new_types=template.types;
 				if(pokedex[template2.speciesid].types!==pokemon.types && !pokemon.transformed) {
@@ -69,7 +76,7 @@
 		desc: ["Battle of pokemon fusions",],
 		mod: 'fusiomons',
 		ruleset: ['Pokemon', 'Fusion', 'Sleep Clause Mod', 'Species Clause', 'Nickname Clause', 'OHKO Clause', 'Moody Clause', 'Evasion Moves Clause', 'Endless Battle Clause', 'Exact HP Mod', 'Cancel Mod', 'Team Preview'],
-		banlist: ['Shadow Tag', 'CAP', 'Gengarite', 'Baton Pass'],
+		banlist: ['Shadow Tag', 'Arena Trap', 'CAP', 'Gengarite', 'Baton Pass'],
 		onAfterMega: function (pokemon) {
 			pokemon.removeVolatile('hybride');
 			let d=this.data['Pokedex'];
@@ -101,12 +108,238 @@
 					name=pokemon.species;
 					template2 =  pokemon.baseTemplate;
 				}
-				
+				let item = Dex.getItem(pokemon.item);				
 				if (template.num === 493) {
 				// Arceus formes
-				let item = Dex.getItem(pokemon.item);
 				template1 = this.getTemplate(item && item.onPlate && this.getAbility(pokemon.ability).id=='multitype'? 'Arceus-' + item.onPlate : 'Arceus');
-				}			
+				} else if(template.num === 773) {
+					template1 = this.getTemplate(item && item.onMemory && this.getAbility(pokemon.ability).id=='rkssystem'? 'Silvally-' + item.onPlate : 'Silvally');
+				}					
+				let stats={};
+				let new_types=template1.types;
+				if(pokedex[template2.speciesid].types!==pokemon.types && !pokemon.transformed) {
+					if(pokedex[template2.speciesid].types[1]!==undefined) {
+						let f=pokedex[template1.speciesid].types[0];
+						let s=pokedex[template2.speciesid].types[1];
+						new_types={f,s};
+					}
+					else {
+						let f=pokedex[template1.speciesid].types[0];
+						let s=pokedex[template2.speciesid].types[0];
+						new_types={f,s};
+					}
+				}
+				if(new_types.f===new_types.s) delete new_types.s;
+				let temple=template1;
+				pokemon.removeVolatile('hybride');
+			if (template2.exists && template2!==pokemon.baseTemplate && !pokemon.transformed) {
+				for(let stat in template.baseStats) {
+					stats[stat]=(pokedex[template1.speciesid].baseStats[stat]+pokedex[template2.speciesid].baseStats[stat])/2;
+				}
+				let new_stats=this.spreadModify(stats, pokemon.set);
+				temple.baseStats=stats;
+				temple.stats=new_stats;
+				temple.weightkg=(pokedex[pokemon.template.speciesid].weightkg+pokedex[template2.speciesid].weightkg)/2;
+				}
+		temple.types=Object.values(new_types);
+		return temple;
+		},
+	},
+		{
+		name: "[Gen 7] Fusionmons LC",
+		desc: ["Battle of pokemon fusions",],
+		mod: 'fusiomons',
+		legaltiers: ['LC',],
+		ruleset: ['Pokemon', 'Fusion', 'Sleep Clause Mod', 'Species Clause', 'Nickname Clause', 'OHKO Clause', 'Moody Clause', 'Evasion Moves Clause', 'Endless Battle Clause', 'Exact HP Mod', 'Cancel Mod', 'Team Preview', 'Little Cup'],
+		banlist: ['Shadow Tag', 'Arena Trap', 'CAP'],
+		onAfterMega: function (pokemon) {
+			pokemon.removeVolatile('hybride');
+			let d=this.data['Pokedex'];
+			let name=pokemon.name.substring(1,20);
+			let template = this.getTemplate(d[pokemon.speciesid].otherFormes[0]);
+			let template2 = this.getTemplate(pokemon.name.substring(1,20));
+			if(!template2.exists)
+			{
+				name=pokemon.species;
+				template2 =  template;
+			}
+			let stats={};
+			for(let stat in pokemon.template.baseStats)
+				{
+				stats[stat]=(d[template.speciesid].baseStats[stat]+d[template2.speciesid].baseStats[stat])/2;
+				}
+			pokemon.baseStats=this.spreadModify(stats, pokemon.set);
+		},
+		onModifyTemplate: function (template, pokemon) {
+			let pokedex=this.data['Pokedex'];
+			let name=pokemon.species;
+			let template1 = template;
+			let template2 = pokemon.baseTemplate;
+				if(pokemon.name !== undefined) {
+					name=pokemon.name.substring(1,20);
+					template2 = this.getTemplate(name);
+				}
+				if(!template2.exists) {
+					name=pokemon.species;
+					template2 =  pokemon.baseTemplate;
+				}
+				let item = Dex.getItem(pokemon.item);				
+				if (template.num === 493) {
+				// Arceus formes
+				template1 = this.getTemplate(item && item.onPlate && this.getAbility(pokemon.ability).id=='multitype'? 'Arceus-' + item.onPlate : 'Arceus');
+				} else if(template.num === 773) {
+					template1 = this.getTemplate(item && item.onMemory && this.getAbility(pokemon.ability).id=='rkssystem'? 'Silvally-' + item.onPlate : 'Silvally');
+				}					
+				let stats={};
+				let new_types=template1.types;
+				if(pokedex[template2.speciesid].types!==pokemon.types && !pokemon.transformed) {
+					if(pokedex[template2.speciesid].types[1]!==undefined) {
+						let f=pokedex[template1.speciesid].types[0];
+						let s=pokedex[template2.speciesid].types[1];
+						new_types={f,s};
+					}
+					else {
+						let f=pokedex[template1.speciesid].types[0];
+						let s=pokedex[template2.speciesid].types[0];
+						new_types={f,s};
+					}
+				}
+				if(new_types.f===new_types.s) delete new_types.s;
+				let temple=template1;
+				pokemon.removeVolatile('hybride');
+			if (template2.exists && template2!==pokemon.baseTemplate && !pokemon.transformed) {
+				for(let stat in template.baseStats) {
+					stats[stat]=(pokedex[template1.speciesid].baseStats[stat]+pokedex[template2.speciesid].baseStats[stat])/2;
+				}
+				let new_stats=this.spreadModify(stats, pokemon.set);
+				temple.baseStats=stats;
+				temple.stats=new_stats;
+				temple.weightkg=(pokedex[pokemon.template.speciesid].weightkg+pokedex[template2.speciesid].weightkg)/2;
+				}
+		temple.types=Object.values(new_types);
+		return temple;
+		},
+	},
+			{
+		name: "[Gen 7] Fusionmons NU",
+		desc: ["Battle of pokemon fusions",],
+		mod: 'fusiomons',
+		legaltiers: ['LC','NFE','PU','BL4','NU',],
+		ruleset: ['Pokemon', 'Fusion', 'Sleep Clause Mod', 'Species Clause', 'Nickname Clause', 'OHKO Clause', 'Moody Clause', 'Evasion Moves Clause', 'Endless Battle Clause', 'Exact HP Mod', 'Cancel Mod', 'Team Preview'],
+		banlist: ['Shadow Tag', 'Arena Trap', 'CAP', 'Drizzle', 'Drought'],
+		onAfterMega: function (pokemon) {
+			pokemon.removeVolatile('hybride');
+			let d=this.data['Pokedex'];
+			let name=pokemon.name.substring(1,20);
+			let template = this.getTemplate(d[pokemon.speciesid].otherFormes[0]);
+			let template2 = this.getTemplate(pokemon.name.substring(1,20));
+			if(!template2.exists)
+			{
+				name=pokemon.species;
+				template2 =  template;
+			}
+			let stats={};
+			for(let stat in pokemon.template.baseStats)
+				{
+				stats[stat]=(d[template.speciesid].baseStats[stat]+d[template2.speciesid].baseStats[stat])/2;
+				}
+			pokemon.baseStats=this.spreadModify(stats, pokemon.set);
+		},
+		onModifyTemplate: function (template, pokemon) {
+			let pokedex=this.data['Pokedex'];
+			let name=pokemon.species;
+			let template1 = template;
+			let template2 = pokemon.baseTemplate;
+				if(pokemon.name !== undefined) {
+					name=pokemon.name.substring(1,20);
+					template2 = this.getTemplate(name);
+				}
+				if(!template2.exists) {
+					name=pokemon.species;
+					template2 =  pokemon.baseTemplate;
+				}
+				let item = Dex.getItem(pokemon.item);
+				if (template.num === 493) {
+				// Arceus formes
+				template1 = this.getTemplate(item && item.onPlate && this.getAbility(pokemon.ability).id=='multitype'? 'Arceus-' + item.onPlate : 'Arceus');
+				} else if(template.num === 773) {
+					template1 = this.getTemplate(item && item.onMemory && this.getAbility(pokemon.ability).id=='rkssystem'? 'Silvally-' + item.onPlate : 'Silvally');
+				}					
+				let stats={};
+				let new_types=template1.types;
+				if(pokedex[template2.speciesid].types!==pokemon.types && !pokemon.transformed) {
+					if(pokedex[template2.speciesid].types[1]!==undefined) {
+						let f=pokedex[template1.speciesid].types[0];
+						let s=pokedex[template2.speciesid].types[1];
+						new_types={f,s};
+					}
+					else {
+						let f=pokedex[template1.speciesid].types[0];
+						let s=pokedex[template2.speciesid].types[0];
+						new_types={f,s};
+					}
+				}
+				if(new_types.f===new_types.s) delete new_types.s;
+				let temple=template1;
+				pokemon.removeVolatile('hybride');
+			if (template2.exists && template2!==pokemon.baseTemplate && !pokemon.transformed) {
+				for(let stat in template.baseStats) {
+					stats[stat]=(pokedex[template1.speciesid].baseStats[stat]+pokedex[template2.speciesid].baseStats[stat])/2;
+				}
+				let new_stats=this.spreadModify(stats, pokemon.set);
+				temple.baseStats=stats;
+				temple.stats=new_stats;
+				temple.weightkg=(pokedex[pokemon.template.speciesid].weightkg+pokedex[template2.speciesid].weightkg)/2;
+				}
+		temple.types=Object.values(new_types);
+		return temple;
+		},
+	},
+		{
+		name: "[Gen 7] Double Fusionmons",
+		desc: ["Battle of pokemon fusions",],
+		mod: 'fusiomons',
+		gameType: 'doubles',
+		ruleset: ['Pokemon', 'Fusion', 'Species Clause', 'Nickname Clause', 'OHKO Clause', 'Moody Clause', 'Evasion Moves Clause', 'Endless Battle Clause', 'Exact HP Mod', 'Cancel Mod', 'Team Preview'],
+		banlist: ['CAP', 'Gengarite', 'Eevium Z', 'Kangaskhanite', 'Dark Void', 'Gravity ++ Grass Whistle', 'Gravity ++ Hypnosis', 'Gravity ++ Lovely Kiss', 'Gravity ++ Sing', 'Gravity ++ Sleep Powder',],
+		onAfterMega: function (pokemon) {
+			pokemon.removeVolatile('hybride');
+			let d=this.data['Pokedex'];
+			let name=pokemon.name.substring(1,20);
+			let template = this.getTemplate(d[pokemon.speciesid].otherFormes[0]);
+			let template2 = this.getTemplate(pokemon.name.substring(1,20));
+			if(!template2.exists)
+			{
+				name=pokemon.species;
+				template2 =  template;
+			}
+			let stats={};
+			for(let stat in pokemon.template.baseStats)
+				{
+				stats[stat]=(d[template.speciesid].baseStats[stat]+d[template2.speciesid].baseStats[stat])/2;
+				}
+			pokemon.baseStats=this.spreadModify(stats, pokemon.set);
+		},
+		onModifyTemplate: function (template, pokemon) {
+			let pokedex=this.data['Pokedex'];
+			let name=pokemon.species;
+			let template1 = template;
+			let template2 = pokemon.baseTemplate;
+				if(pokemon.name !== undefined) {
+					name=pokemon.name.substring(1,20);
+					template2 = this.getTemplate(name);
+				}
+				if(!template2.exists) {
+					name=pokemon.species;
+					template2 =  pokemon.baseTemplate;
+				}
+				let item = Dex.getItem(pokemon.item);
+				if (template.num === 493) {
+				// Arceus formes
+					template1 = this.getTemplate(item && item.onPlate && this.getAbility(pokemon.ability).id=='multitype'? 'Arceus-' + item.onPlate : 'Arceus');
+				} else if(template.num === 773) {
+					template1 = this.getTemplate(item && item.onMemory && this.getAbility(pokemon.ability).id=='rkssystem'? 'Silvally-' + item.onPlate : 'Silvally');
+				}					
 				let stats={};
 				let new_types=template1.types;
 				if(pokedex[template2.speciesid].types!==pokemon.types && !pokemon.transformed) {
