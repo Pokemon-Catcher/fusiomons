@@ -33,6 +33,7 @@ exports.BattleFormats = {
 			let doublesUbers =['Arceus', 'Dialga', 'Giratina', 'Giratina-Origin', 'Groudon', 'Ho-Oh', 'Jirachi', 'Kyogre', 'Kyurem-White',
 			'Lugia', 'Lunala', 'Magearna', 'Mewtwo', 'Palkia', 'Rayquaza', 'Reshiram', 'Solgaleo', 'Xerneas', 'Yveltal', 'Zekrom'];
 			let legalTiers = format.legaltiers;
+			let lessRules = format.lr;
 			let gameType = format.gameType;
 		 	let item = this.getItem(set.item);
 			let template = this.getTemplate(set.species);
@@ -140,8 +141,7 @@ exports.BattleFormats = {
 				template = this.getTemplate(set.species);
 
 			}
-			global.TeamValidator = require('../../team-validator.js');
-			let lsetData = {set:set, format:'gen7ou'};
+			global.TeamValidator = require('../../sim/team-validator');
 			if(set.name != undefined|set.name != null)
 				{
 				name=set.name.substring(1,20);
@@ -172,7 +172,14 @@ exports.BattleFormats = {
 					if ((!abilityList.includes(ability.name))) problems.push(""+set.species+" has illegal ability: "+ ability.name);
 					for (let z in moves) 
 						{
-						if((TeamValidator('gen7ou').checkLearnset(this.getMove(moves[z]).id, !template1.learnset? originTemplate1.species:template1.species, lsetData))&(TeamValidator('gen7ou').checkLearnset(this.getMove(moves[z]).id, !template2.learnset? originTemplate2.species:template2.species, lsetData))) problems.push(""+set.species+" has illegal move: "+moves[z]);
+						let lsetData = {sources:[], sourcesBefore:0};
+						let check1=TeamValidator('gen7ou').checkLearnset(this.getMove(moves[z]).id, !template1.learnset? originTemplate1.species:template1.species, lsetData, set);
+						let check2=TeamValidator('gen7ou').checkLearnset(this.getMove(moves[z]).id, !template2.learnset? originTemplate2.species:template2.species, lsetData, set);
+						console.log(check1);
+						console.log(check2);
+						if(check1==false|check2==false) continue;
+						if(check1.type=='incompatible'|check2.type=='incompatible') continue;
+						if(check1.type=='invalid'&check2.type=='invalid') problems.push(""+set.species+" has illegal move: "+moves[z]);
 						}
 					//Afterforme Check	
 					if(ability.id=='powerconstruct'&&(template.speciesid=='zygarde'||template.speciesid=='zygarde10'))  template1=this.getTemplate('zygardecomplete');
@@ -182,33 +189,38 @@ exports.BattleFormats = {
 					if(moves.includes('dragonascent')&&template.speciesid=='rayquaza')  template1=this.getTemplate('rayquazamega');
 					if(ability.id=='schooling'&&template.speciesid=='wishiwashi') template1=this.getTemplate('wishiwashi-school');
 					let stats={};
-					for(let stat in template2.baseStats)
+					
+					if(!lessRules)
 					{
-						stats[stat]=template2.baseStats[stat];
-						stats[stat]=(stats[stat]+((this.getItem(set.item).megaEvolves==set.species)?this.getTemplate(this.getItem(set.item).megaStone).baseStats[stat]:template1.baseStats[stat]))/2;
-						if((ability.id=='hugepower'||ability.id=='purepower'||(abilityAfterMega&&(abilityAfterMega.id=='purepower'||abilityAfterMega.id=='hugepower')) )&&stat=='atk') stats[stat]*=2;
-						if(ability.id=='furcoat'&&stat=='def') stats[stat]*=2;
-						stats[stat]=Math.floor(stats[stat]);
-					}
-					let b, c;
-					let BST=Object.values(stats).reduce((b,c) =>(b+c));
-					if(template1!=template2&BST>600||(template1.tier=='Uber'&template2.tier=='Uber'&&gameType!='doubles')||(doublesUbers.includes(template1.species)&&doublesUbers.includes(template2.species)&&gameType=='doubles'))
+						for(let stat in template2.baseStats)
 						{
-						problems.push("Fusion of "+template1.species+" and "+template2.species+" is banned, because"+((BST>600)?' sum of stats is higher than 600':' they are both Uber'));
+							stats[stat]=template2.baseStats[stat];
+							stats[stat]=(stats[stat]+((this.getItem(set.item).megaEvolves==set.species)?this.getTemplate(this.getItem(set.item).megaStone).baseStats[stat]:template1.baseStats[stat]))/2;
+							if((ability.id=='hugepower'||ability.id=='purepower'||(abilityAfterMega&&(abilityAfterMega.id=='purepower'||abilityAfterMega.id=='hugepower')) )&&stat=='atk') stats[stat]*=2;
+							if(ability.id=='furcoat'&&stat=='def') stats[stat]*=2;
+							stats[stat]=Math.floor(stats[stat]);
 						}
+						let b, c;
+						let BST=Object.values(stats).reduce((b,c) =>(b+c));
+						if(template1!=template2&BST>600||(template1.tier=='Uber'&template2.tier=='Uber'&&gameType!='doubles')||(doublesUbers.includes(template1.species)&&doublesUbers.includes(template2.species)&&gameType=='doubles'))
+						{
+							problems.push("Fusion of "+template1.species+" and "+template2.species+" is banned, because"+((BST>600)?' sum of stats is higher than 600':' they are both Uber'));
+						}
+					}
 					if(template2.battleOnly&&template2.species!='Wishiwashi-School')
 					{
-					problems.push("Fusion of "+template2.species+" is banned, because this is battle forme");
+						problems.push("Fusion of "+template2.species+" is banned, because this is battle forme");
 					}
 				}
 			else
 				{
 				if (!abilityList.includes(ability.name)) return [""+set.species+" has illegal ability: "+ ability.name];
-				for (let z in moves) 
+				if(!lessRules)
 					{
-					if(TeamValidator('gen7ou').checkLearnset(this.getMove(moves[z]).id, !template1.learnset? originTemplate1.species:template1.species, lsetData)) problems.push(""+set.species+" has illegal move: "+moves[z]);
+						if(TeamValidator('gen7ou').validateSet(set)) problems.push(TeamValidator('gen7ou').validateSet(set));
+						if ((template1.tier=='Uber'&&gameType!='doubles')||(doublesUbers.includes(template1.species)&&gameType=='doubles')) problems.push(""+set.species+" in Uber which is banned");
 					}
-				if ((template1.tier=='Uber'&&gameType!='doubles')||(doublesUbers.includes(template1.species)&&gameType=='doubles')) problems.push(""+set.species+" in Uber which is banned");
+					else if(TeamValidator('gen7uber').validateSet(set)) problems.push(TeamValidator('gen7uber').validateSet(set));
 				 }
 				//Complicate Banlist
 				//if(ability.id=='speedboost'&((StatsSum0+StatsSum1)/2>500|set.item=='medichamite'|set.item=='mawilite')) problems.push(''+ability.name+ ' + sum of stats >500 or Medichamite/Mawilite' + ' is banned');
@@ -216,6 +228,7 @@ exports.BattleFormats = {
 				//if((ability.id=='purepower'|ability.id=='hugepower')&((StatsSum0+StatsSum1)/2>500)) problems.push(''+ability.name+ ' + sum of stats >500' + ' is banned');
 				if(template2!=template1&template2.exists)
 				{
+					if(!lessRules){
 					switch(ability.id)
 					{
 						case 'protean': case 'fluffy': case 'simple': case 'imposter': case 'wonderguard':
@@ -233,9 +246,11 @@ exports.BattleFormats = {
 							break;
 						}
 					}
+					}
 				}
 				//Pokemons' Banlist
 				if(template1.tier=='Illegal'|template2.tier=='Illegal'|template1.tier=='CAP'|template2.tier=='CAP') return [ "" + set.species + ' is illegal'];
+				if(!lessRules){
 				if((originTemplate1.speciesid=='deoxys'||originTemplate2.speciesid=='deoxys'||template1.speciesid=='deoxys'||template2.speciesid=='deoxys')&(template1.speciesid!='deoxysdefense'&template2.speciesid!='deoxysdefense')) problems.push('Only Deoxys-Defense is allowed');
 				if(legalTiers&&(!legalTiers.includes(template1.tier)|!legalTiers.includes(template2.tier)|(item.megaEvolves!=undefined&&!legalTiers.includes(this.getTemplate(item.megaStone).tier)))) problems.push('Fusion of ' +template1.species+' contains illegal tier');
 				//Moves' Banlist
@@ -248,6 +263,7 @@ exports.BattleFormats = {
 					if(abilityAfterMega&&moves[z]=='electrify'&&(abilityAfterMega.id=='lightningrod'||ability.id=='lightningrod')) problems.push('Combination of' + move.name + ' and Lightning Rod is banned');
 					if(move.accuracy<100&move.status=='slp'&(ability.id=='noguard'||(abilityAfterMega&&abilityAfterMega.id=='noguard'))) problems.push('Combination of '+ move.name + ' and No Guard is banned');
 					}
+				}
 					return problems;
 		},
 
@@ -259,7 +275,7 @@ exports.BattleFormats = {
 	{
 	effectType: 'Rule',
 	name: 'Fusion',
-	onUpdate: function (pokemon) {		
+	onSwitchIn: function (pokemon) {		
 			if(pokemon.name!=undefined)
 			{
 				let d=this.data['Pokedex'];
@@ -300,7 +316,38 @@ exports.BattleFormats = {
 						this.add('html', `<b>${""+pokemon.species+" + "+d[template2.speciesid].species+' base stats:'}</b>`);
 						if(template2.exists)
 							{
+							// let image1;
+							// let imageH;
+							// let http = require('http');
+							  // let options = {
+							  // hostname: 'www.pokefusion.japeal.com',
+							  // port: 80,
+							  // path: ('/PKMColourV4.php?ver=3.0&p1='+template2.num+'&p2='+template.num+'34&c=0'),
+							  // method: 'POST',
+							  // headers: {
+								// 'Content-Type': 'application/x-www-form-urlencoded',
+							  // }
+							// };
+							// var req = http.request(options, (res) => {
+							  // res.setEncoding('utf8');
+							  // res.on('data', (chunk) => {
+								// console.log(chunk);
+								// if(chunk.includes('id="image1"')) image1=chunk;
+								// if(chunk.includes('id="imageH"')) imageH=chunk;
+							  // });
+							  // res.on('end', () => {
+								// console.log('No more data in response.')
+							  // })
+							// });
+
+							// req.on('error', (e) => {
+							  // console.log(`problem with request: ${e.message}`);
+							// });
+							// req.end();
+							
+							// let spr=`<div>${image1}${imageH}</div>`;
 							if(template.num<152&&template2.num<152) this.add('html',`<details><summary>Спрайт</summary><p><img src="http://images.alexonsager.net/pokemon/fused/${template['num']}/${template['num']}.${template2.num}.png" width="100" height="100"></p></details>`);
+							//if(template.num<400&&template2.num<400) this.add('html',`<details><summary>Спрайт</summary><p>${spr}</iframe></p></details>`);
 							let baseStatsFusion={};
 							for(let i in pokemon.baseStats)
 								{
