@@ -2,7 +2,6 @@
 
 exports.BattleScripts = {
 	inherit: 'gen7',
-
 	
 	randomTeam: function (side) {
 		let excludedTiers = {'NFE':1,'LC Uber':1, 'LC':1};
@@ -1435,5 +1434,105 @@ exports.BattleScripts = {
 		}
 
 		return counter;
+	},
+	
+	/*
+	 * Main fuse function, used in every fusionmons format. 
+	 * Takes template of first pokemon and itself pokemon
+	 * Returns template of result pokemon
+	 */
+	
+	fuse: function(template, pokemon)
+	{	
+		//Setup
+		let pokedex=this.data['Pokedex'];
+		let name=pokemon.species;
+		let template1 = this.getTemplate(pokemon.speciesid); //First Pokemon
+		let template2 = pokemon.baseTemplate; //Second  Pokemon
+		
+		//Extract second pokemon from name of first pokemon
+		if(!pokemon.name) {
+			name=pokemon.name.substring(1,20);
+			template2 = this.getTemplate(name); 
+			if(!template2.exists) {
+				name=pokemon.species;
+				template2 =  pokemon.baseTemplate;
+			}
+		}
+		
+		let item = this.getItem(pokemon.item);		
+		// Arceus and Sylvally formes checking
+		if (template.num === 493) {
+			template1 = this.getTemplate(item && item.onPlate && this.getAbility(pokemon.ability).id=='multitype'? 'Arceus-' + item.onPlate : 'Arceus');
+		} 
+		else if(template.num === 773) {
+			template1 = this.getTemplate(item && item.onMemory && this.getAbility(pokemon.ability).id=='rkssystem'? 'Silvally-' + item.onPlate : 'Silvally');
+		}
+		
+		let stats={}; //Used for new stats
+		let new_types=[template1.types[0],template1.types[1]]; //Used for new types
+		
+		//Calculating of new types
+		if(pokedex[template2.speciesid].types[0]!==pokemon.types[0] && pokedex[template2.speciesid].types[1]!==pokemon.types[1] && !pokemon.transformed) {
+			if(pokedex[template2.speciesid].types[1]!==undefined) {
+				new_types=[pokedex[template1.speciesid].types[0],pokedex[template2.speciesid].types[1]];
+			}
+			else {
+				new_types=[pokedex[template1.speciesid].types[0],pokedex[template2.speciesid].types[0]];
+			}
+		}
+		
+		//Delete second type if they're both same
+		if(new_types[0]===new_types[1]) new_types.pop();
+	
+		let templateResult=template1; //Result template
+		pokemon.removeVolatile('hybride');
+		//Assigning stats, weight, types to result template
+		if (template2.exists && template2!==pokemon.baseTemplate && !pokemon.transformed) {
+		for(let stat in template.baseStats) {
+			stats[stat]=(pokedex[template1.speciesid].baseStats[stat]+pokedex[template2.speciesid].baseStats[stat])/2;
+		}
+		let new_stats=this.spreadModify(stats, pokemon.set);
+		templateResult.baseStats=stats;
+		templateResult.stats=new_stats;
+		templateResult.weightkg=(pokedex[pokemon.template.speciesid].weightkg+pokedex[template2.speciesid].weightkg)/2;
+		}
+		templateResult.types=[new_types[0]];
+		if(new_types[1]) templateResult.types.push(new_types[1]);
+		
+		return templateResult;
+	},
+	info: function(pokemon,  apparentPokemon2, apparentPokemon, apparentTypes) {
+		let d=this.data['Pokedex'];
+		console.log(apparentTypes);
+		if(typeof apparentPokemon === undefined){
+			apparentPokemon=pokemon;
+		}
+		if(typeof apparentTypes === undefined){
+			apparentTypes=pokemon.types;
+		}
+		if(typeof apparentPokemon2 === undefined){
+			apparentPokemon2=pokemon.baseTemplate;
+		}
+		console.log(apparentTypes);
+		if(apparentPokemon2&&apparentPokemon.species!=apparentPokemon2.species&&!pokemon.transformed)
+		{
+		this.add('-start', pokemon, 'typechange', apparentTypes.join('/'), '[silent]');
+		if(!pokemon.transformed)
+			{
+			this.add('html', `<b>${""+apparentPokemon.species+" + "+d[apparentPokemon2.speciesid].species+' base stats:'}</b>`);
+			if(apparentPokemon2.exists)
+				{
+				if(apparentPokemon.template.num<152&&apparentPokemon2.num<152) this.add('html',`<details><summary>Спрайт</summary><p><img src="http://images.alexonsager.net/pokemon/fused/${apparentPokemon.template['num']}/${apparentPokemon.template['num']}.${apparentPokemon2.num}.png" width="100" height="100"></p></details>`);
+				let baseStatsFusion={};
+				for(let i in apparentPokemon.baseStats)
+					{
+					baseStatsFusion[i]=Math.round((d[apparentPokemon.template.speciesid].baseStats[i]+d[apparentPokemon2.speciesid].baseStats[i])/2);
+					}
+					let baseStatsFusionText=`<table><tr><b><th>HP</th><th>Attack</th><th>Defense</th><th>Sp.Attack</th><th>Sp.Defense</th><th>Speed</th></b></tr> <tr><td>${baseStatsFusion['hp']}</td><td>${baseStatsFusion['atk']}</td><td>${baseStatsFusion['def']}</td><td>${baseStatsFusion['spa']}</td><td>${baseStatsFusion['spd']}</td><td>${baseStatsFusion['spe']}</td></tr></table>`;
+					this.add('html', `<font size=0.95 color=#5c5c8a>${baseStatsFusionText}</font>`);
+				}
+			}
+		}
 	}
-};
+}

@@ -141,7 +141,7 @@ exports.BattleFormats = {
 				template = this.getTemplate(set.species);
 
 			}
-			global.TeamValidator = require('../../sim/team-validator');
+			let TeamValidator = require('./../../sim/team-validator');
 			if(set.name != undefined|set.name != null)
 				{
 				name=set.name.substring(1,20);
@@ -177,6 +177,7 @@ exports.BattleFormats = {
 						let check2=TeamValidator('gen7ou').checkLearnset(this.getMove(moves[z]).id, !template2.learnset? originTemplate2.species:template2.species, lsetData, set);
 						console.log(check1);
 						console.log(check2);
+						if(!check1|!check2) continue;
 						if(check1==false|check2==false) continue;
 						if(check1.type=='incompatible'|check2.type=='incompatible') continue;
 						if(check1.type=='invalid'&check2.type=='invalid') problems.push(""+set.species+" has illegal move: "+moves[z]);
@@ -271,12 +272,11 @@ exports.BattleFormats = {
 		},
 
 
-	fusion:
-	{
+	fusion: {
 	effectType: 'Rule',
 	name: 'Fusion',
 	onSwitchIn: function (pokemon) {		
-			if(pokemon.name!=undefined)
+			if(pokemon.name)
 			{
 				let d=this.data['Pokedex'];
 				let name=pokemon.name.substring(1,20);
@@ -287,83 +287,61 @@ exports.BattleFormats = {
 					name=pokemon.species;
 					template2 =  pokemon.template;
 				}
-				let new_types=d[pokemon.template.speciesid].types;
-				if(d[template2.speciesid].types!=pokemon.types&!pokemon.transformed)
-						{
-						if(d[template2.speciesid].types[1]!=undefined)
-							{
-							let f=d[pokemon.template.speciesid].types[0];
-							let s=d[template2.speciesid].types[1];
-							new_types={f,s};
-							}
-						else
-							{
-							let f=d[pokemon.template.speciesid].types[0];
-							let s=d[template2.speciesid].types[0];
-							new_types={f,s};
-							}
-						}
-					if(new_types.f==new_types.s)
-						{
-						delete new_types.s;
-						}
-				if(this.getTemplate(pokemon.name.substring(1,20)).exists&&pokemon.species!=this.getTemplate(pokemon.name.substring(1,20))&&!pokemon.getVolatile('hybride')&&!pokemon.transformed)
-					{
-					pokemon.types=Object.values(new_types);
-					this.add('-start', pokemon, 'typechange', pokemon.types.join('/'), '[silent]');
-					if(!pokemon.transformed)
-						{
-						this.add('html', `<b>${""+pokemon.species+" + "+d[template2.speciesid].species+' base stats:'}</b>`);
-						if(template2.exists)
-							{
-							// let image1;
-							// let imageH;
-							// let http = require('http');
-							  // let options = {
-							  // hostname: 'www.pokefusion.japeal.com',
-							  // port: 80,
-							  // path: ('/PKMColourV4.php?ver=3.0&p1='+template2.num+'&p2='+template.num+'34&c=0'),
-							  // method: 'POST',
-							  // headers: {
-								// 'Content-Type': 'application/x-www-form-urlencoded',
-							  // }
-							// };
-							// var req = http.request(options, (res) => {
-							  // res.setEncoding('utf8');
-							  // res.on('data', (chunk) => {
-								// console.log(chunk);
-								// if(chunk.includes('id="image1"')) image1=chunk;
-								// if(chunk.includes('id="imageH"')) imageH=chunk;
-							  // });
-							  // res.on('end', () => {
-								// console.log('No more data in response.')
-							  // })
-							// });
-
-							// req.on('error', (e) => {
-							  // console.log(`problem with request: ${e.message}`);
-							// });
-							// req.end();
-							
-							// let spr=`<div>${image1}${imageH}</div>`;
-							if(template.num<152&&template2.num<152) this.add('html',`<details><summary>Спрайт</summary><p><img src="http://images.alexonsager.net/pokemon/fused/${template['num']}/${template['num']}.${template2.num}.png" width="100" height="100"></p></details>`);
-							//if(template.num<400&&template2.num<400) this.add('html',`<details><summary>Спрайт</summary><p>${spr}</iframe></p></details>`);
-							let baseStatsFusion={};
-							for(let i in pokemon.baseStats)
-								{
-								baseStatsFusion[i]=Math.round((d[pokemon.template.speciesid].baseStats[i]+d[template2.speciesid].baseStats[i])/2);
-								}
-								let baseStatsFusionText=`<table><tr><b><th>HP</th><th>Attack</th><th>Defense</th><th>Sp.Attack</th><th>Sp.Defense</th><th>Speed</th></b></tr> <tr><td>${baseStatsFusion['hp']}</td><td>${baseStatsFusion['atk']}</td><td>${baseStatsFusion['def']}</td><td>${baseStatsFusion['spa']}</td><td>${baseStatsFusion['spd']}</td><td>${baseStatsFusion['spe']}</td></tr></table>`;
-								//let baseStatsFusionText=`<b>${'HP:'}</b>${baseStatsFusion['hp']}<b>${' Attack:'}</b>${baseStatsFusion['atk']}<b>${' Defense:'}</b>${baseStatsFusion['def']}<b>${' Sp.Attack:'}</b>${baseStatsFusion['spa']}<b>${' Sp.Defense:'}</b>${baseStatsFusion['spd']}<b>${' Speed:'}</b>${baseStatsFusion['spe']}`;
-								this.add('html', `<font size=0.95 color=#5c5c8a>${baseStatsFusionText}</font>`);
-							}
-						}
-					pokemon.addVolatile('hybride');
+				let new_types=[d[pokemon.template.speciesid].types[0],d[pokemon.template.speciesid].types[1]];
+				if(d[template2.speciesid].types!=pokemon.types&!pokemon.transformed) {
+					if(d[template2.speciesid].types[1]!=undefined)
+						new_types=[d[pokemon.template.speciesid].types[0],d[template2.speciesid].types[1]];
+					else 
+						new_types=[d[pokemon.template.speciesid].types[0],d[template2.speciesid].types[0]];
+				}
+				if(new_types[0]==new_types[1]) 
+					new_types.pop();
+				
+				pokemon.types=[new_types[0]];
+				if(new_types[1]) pokemon.types.push(new_types[1]);
+				
+				//Zoroark Illusion
+				let apparentPokemon;
+				let apparentPokemon2
+				let apparentTypes=[];
+				
+				for(let i in new_types){
+				apparentTypes.push(new_types[i]);
+				}
+				
+				if(pokemon.illusion){
+					let i;
+					for (i = pokemon.side.pokemon.length - 1; i > pokemon.position; i--) {
+						if (!pokemon.side.pokemon[i]) continue;
+						if (!pokemon.side.pokemon[i].fainted) break;
 					}
-				/* if(pokemon.types!=Object.values(new_types))
-				{
-					pokemon.types=Object.values(new_types)
-				} */
+					if (pokemon.side.pokemon[i]&&pokemon != pokemon.side.pokemon[i]) {
+						apparentPokemon=pokemon.side.pokemon[i];
+						apparentPokemon2 = this.getTemplate(pokemon.illusion.name.substring(1,20));
+						
+						if(apparentPokemon2.types[1]) {
+							apparentTypes=[apparentPokemon.types[0],apparentPokemon2.types[1]];
+						}
+						else {
+							apparentTypes=[apparentPokemon.types[0],apparentPokemon2.types[0]];
+						}
+						
+						if(apparentTypes[0]===apparentTypes[1]) apparentTypes.pop();
+						
+						if(!apparentPokemon2.exists)
+						{
+							name=pokemon.illusion.species;
+							template2 =  apparentPokemon;
+						}
+					} else {
+						apparentPokemon=pokemon;
+						apparentPokemon2=template2;
+					}
+				} else {
+					apparentPokemon=pokemon;
+					apparentPokemon2=template2;
+				}
+				this.info(pokemon, apparentPokemon2, apparentPokemon, apparentTypes);
 			}
 		}
 	},
