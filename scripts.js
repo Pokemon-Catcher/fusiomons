@@ -1504,17 +1504,15 @@ exports.BattleScripts = {
 	},
 	info: function(pokemon,  apparentPokemon2, apparentPokemon, apparentTypes) {
 		let d=this.data['Pokedex'];
-		console.log(apparentTypes);
-		if(typeof apparentPokemon === undefined){
+		if(!apparentPokemon){
 			apparentPokemon=pokemon;
 		}
-		if(typeof apparentTypes === undefined){
+		if(!apparentTypes){
 			apparentTypes=pokemon.types;
 		}
-		if(typeof apparentPokemon2 === undefined){
+		if(!apparentPokemon2){
 			apparentPokemon2=pokemon.baseTemplate;
 		}
-		console.log(apparentTypes);
 		if(apparentPokemon2&&apparentPokemon.species!=apparentPokemon2.species&&!pokemon.transformed)
 		{
 		this.add('-start', pokemon, 'typechange', apparentTypes.join('/'), '[silent]');

@@ -175,8 +175,6 @@ exports.BattleFormats = {
 						let lsetData = {sources:[], sourcesBefore:0};
 						let check1=TeamValidator('gen7ou').checkLearnset(this.getMove(moves[z]).id, !template1.learnset? originTemplate1.species:template1.species, lsetData, set);
 						let check2=TeamValidator('gen7ou').checkLearnset(this.getMove(moves[z]).id, !template2.learnset? originTemplate2.species:template2.species, lsetData, set);
-						console.log(check1);
-						console.log(check2);
 						if(!check1|!check2) continue;
 						if(check1==false|check2==false) continue;
 						if(check1.type=='incompatible'|check2.type=='incompatible') continue;
