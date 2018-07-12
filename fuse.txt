@@ -1,18 +1,20 @@
+	fm: 'fuse',
 	fuse: function (target, room, user, connection, cmd) {
 		if (!this.runBroadcast()) return;
+		let fusionmonsScript=require('../mods/fusiomons/scripts.js').BattleScripts;
 		let buffer;
 		let sep = target.split(',');
-		if (sep.length == 2) {
+		if (sep.length >= 2) {
 			let pokemon1 = Dex.getTemplate(sep[0]);
 			let pokemon2 = Dex.getTemplate(sep[1]);
+			let rules={};
+			for(let i=2;i<sep.length;i++){
+				rules[sep[i].replace(/ ?/g, '')]=true;
+			}
 			let d=Dex.data.Pokedex;
 			if(pokemon1.exists&pokemon2.exists)
 			{
-				let baseStatsFusion={};
-				for(let i in pokemon1.baseStats)
-				{
-					baseStatsFusion[i]=Math.floor((d[pokemon1.speciesid].baseStats[i]+d[pokemon2.speciesid].baseStats[i])/2);
-				}
+				let baseStatsFusion=fusionmonsScript.fuseStatsCalculate(pokemon1, pokemon2, rules['alt']);
 				let pokTypes=[pokemon1.types[0],pokemon2.types[1]?pokemon2.types[1]:pokemon2.types[0]];
 				let pokAbilities=Object.values(pokemon1.abilities).concat(Object.values(pokemon2.abilities));
 				let filteredAbilities=[];
@@ -31,5 +33,78 @@
 			else return this.errorReply(`${((!pokemon1.exists)?sep[0]:'')+((!pokemon1.exists&!pokemon2.exists)?' and ':'')+((!pokemon2.exists)?sep[1]:'')} is not found, maybe you've made mistake?`);
 		}
 		else return this.errorReply(`Choose 2 species of pokemon`);
-	this.sendReply(`|raw|`+buffer);
+		this.sendReply(`|raw|`+buffer);
+	},
+	fml: 'fuselearnset',
+	fuselearnset: function (target, room, user, connection, cmd) {
+		if (!this.runBroadcast()) return;
+		let fusionmonsScript=require('../mods/fusiomons/scripts.js').BattleScripts;
+		let buffer=``;
+		let colorTable={
+				'???':`#1bc4a8`,
+				Water:`#007fff`,
+				Fire:`#ff9f32`,
+				Grass:`#23a817`,
+				Bug:`#8cb534`,
+				Flying:`#a8fff1`,
+				Rock:`#ad541d`,
+				Steel:`#d1d1d1`,
+				Ground:`#e8c681`,
+				Ghost:`#7f53d1`,
+				Normal:`#7a5e29`,
+				Dark:`#8e004c`,
+				Fairy:`#ff63f9`,
+				Poison:`#af00e0`,
+				Electric:`#fff89b`,
+				Fighting:`#f47a7a`,
+				Ice:`#cceaff`,
+				Dragon:`#6435ff`,
+				Psychic:`#ff5495`
 		}
+		let sep = target.split(',');
+		if (sep.length >= 2) {
+			let pokemon1 = Dex.getTemplate(sep[0]);
+			let pokemon2 = Dex.getTemplate(sep[1]);
+			let rules={};
+			for(let i=2;i<sep.length;i++){
+				rules[sep[i].replace(/ ?/g, '')]=true;
+			}
+			let d=Dex.data.Pokedex;
+			if(pokemon1.exists&pokemon2.exists)
+			{
+				buffer+=`<details open="open"><summary><font color=#ad741a>${pokemon1.species}+${pokemon2.species} learnset</font></summary><font size=-2>`;
+				let learnset=fusionmonsScript.fuseLearnets(pokemon1, pokemon2, rules['alt']);
+				let sortedLearnset=Object.keys(learnset);
+				sortedLearnset.sort(function(a, b) {
+					let moveA=Dex.getMove(a);
+					let moveB=Dex.getMove(b);
+					 if(moveA.type.toLowerCase()<moveB.type.toLowerCase()) return -1;
+					 if(moveA.type.toLowerCase()>moveB.type.toLowerCase()) return 1;
+					 if(moveA.category.toLowerCase()<moveB.category.toLowerCase()) return -1;
+					 if(moveA.category.toLowerCase()>moveB.category.toLowerCase()) return 1;
+					 if(moveA.name.toLowerCase()<moveB.name.toLowerCase()) return -1;
+					 if(moveA.name.toLowerCase()>moveB.name.toLowerCase()) return 1;
+					return 0;
+				});
+				let prevMoveType='';
+				buffer+=`<table bgcolor=#2d2d2d>`;
+				for(let i in sortedLearnset){
+					let tag;
+					let move=Dex.getMove(sortedLearnset[i]);
+					if(prevMoveType=='') buffer+=`<tr><th><font color=${colorTable[move.type]}>${move.type}: </font> </th> <th> <font color=${colorTable[move.type]}>`
+					else if(prevMoveType!=move.type) buffer+=`</font> </th></tr><tr><th><font color=${colorTable[move.type]}>${move.type}: </font> </th> <th> <font color=${colorTable[move.type]}>`
+					if(move.category=='Special')
+						tag=`u`;
+					else if(move.category=='Physical')
+						tag=`b`;
+					if(tag) buffer+=`<${tag}>${move.name}</${tag}>, `;
+					else buffer+=`<font color=${colorTable[move.type]}>${move.name}, `;
+					prevMoveType=move.type;
+				}
+				buffer+=`</font> </th></tr></font></details>`;
+			}
+			else return this.errorReply(`${((!pokemon1.exists)?sep[0]:'')+((!pokemon1.exists&!pokemon2.exists)?' and ':'')+((!pokemon2.exists)?sep[1]:'')} is not found, maybe you've made mistake?`);
+		}
+		else return this.errorReply(`Choose 2 species of pokemon`);
+		this.sendReply(`|raw|`+buffer);
+	},

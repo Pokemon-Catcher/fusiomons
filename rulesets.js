@@ -169,16 +169,14 @@ exports.BattleFormats = {
 				{
 				abilityList=abilityList.concat(Object.values(template2.abilities));
 				if(template2.isMega) problems.push("Using Mega-Pokemons in fusion is banned");
+				let fusionmonsScript=require('./scripts.js').BattleScripts;
+				
+				let newLearnset=fusionmonsScript.fuseLearnets(!template1.learnset? originTemplate1:template1,!template2.learnset? originTemplate2:template2, format.fusionmonsRules['Alternative']);
 					if ((!abilityList.includes(ability.name))) problems.push(""+set.species+" has illegal ability: "+ ability.name);
 					for (let z in moves) 
 						{
-						let lsetData = {sources:[], sourcesBefore:0};
-						let check1=TeamValidator('gen7ou').checkLearnset(this.getMove(moves[z]).id, !template1.learnset? originTemplate1.species:template1.species, lsetData, set);
-						let check2=TeamValidator('gen7ou').checkLearnset(this.getMove(moves[z]).id, !template2.learnset? originTemplate2.species:template2.species, lsetData, set);
-						if(!check1|!check2) continue;
-						if(check1==false|check2==false) continue;
-						if(check1.type=='incompatible'|check2.type=='incompatible') continue;
-						if(check1.type=='invalid'&check2.type=='invalid') problems.push(""+set.species+" has illegal move: "+moves[z]);
+						let check1=newLearnset[moves[z]]
+						if(!check1) problems.push(""+set.species+" has illegal move: "+moves[z]);
 						}
 					//Afterforme Check	
 					if(ability.id=='powerconstruct'&&(template.speciesid=='zygarde'||template.speciesid=='zygarde10'))  template1=this.getTemplate('zygardecomplete');
@@ -216,10 +214,11 @@ exports.BattleFormats = {
 				if (!abilityList.includes(ability.name)) return [""+set.species+" has illegal ability: "+ ability.name];
 				if(!lessRules)
 					{
-						if(TeamValidator('gen7ou').validateSet(set)) problems.push(TeamValidator('gen7ou').validateSet(set));
+						if(TeamValidator('gen7ou').validateSet(set))problems.concat(TeamValidator('gen7ou').validateSet(set));
 						if ((template1.tier=='Uber'&&gameType!='doubles')||(doublesUbers.includes(template1.species)&&gameType=='doubles')) problems.push(""+set.species+" in Uber which is banned");
 					}
-					else if(TeamValidator('gen7uber').validateSet(set)) problems.push(TeamValidator('gen7uber').validateSet(set));
+					else if(TeamValidator('gen7ubers').validateSet(set)) problems.push(TeamValidator('gen7ubers').validateSet(set));
+					console.log(TeamValidator('gen7ubers').validateSet(set));
 				 }
 				//Complicate Banlist
 				//if(ability.id=='speedboost'&((StatsSum0+StatsSum1)/2>500|set.item=='medichamite'|set.item=='mawilite')) problems.push(''+ability.name+ ' + sum of stats >500 or Medichamite/Mawilite' + ' is banned');
