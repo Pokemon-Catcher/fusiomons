@@ -15,8 +15,8 @@ exports.BattleScripts = {
 		//Setup
 		let pokedex=this.data['Pokedex'];
 		let name=pokemon.species;
-		let template1 = this.getTemplate(pokemon.speciesid); //First Pokemon
-		let template2 = pokemon.baseTemplate; //Second  Pokemon
+		let template1 = this.getTemplate(template.species); //First Pokemon
+		let template2 =  this.getTemplate(template.species); //Second  Pokemon
 		
 		//Extract second pokemon from name of first pokemon
 		if(pokemon.name) {
@@ -24,7 +24,7 @@ exports.BattleScripts = {
 			template2 = this.getTemplate(name); 
 			if(!template2.exists) {
 				name=pokemon.species;
-				template2 = pokemon.baseTemplate;
+				template2 = template.baseTemplate;
 			}
 		}
 		
@@ -58,7 +58,6 @@ exports.BattleScripts = {
 		//Assigning stats, weight, types to result template
 		if (template2.exists && template2!=pokemon.baseTemplate && !pokemon.transformed) {
 			let new_stats=this.spreadModify(stats, pokemon.set);
-			
 			templateResult.baseStats=stats;
 			templateResult.stats=new_stats;
 			templateResult.weightkg=(pokedex[pokemon.template.speciesid].weightkg+pokedex[template2.speciesid].weightkg)/2;
@@ -89,13 +88,12 @@ exports.BattleScripts = {
 			this.add('html', `<b>${""+apparentPokemon.species+" + "+dex[apparentPokemon2.speciesid].species+' base stats:'}</b>`);
 			if(apparentPokemon2.exists)
 				{
-				if(apparentPokemon.template.num<152&&apparentPokemon2.num<152) this.add('html',`<details><summary>Спрайт</summary><p><img src="http://images.alexonsager.net/pokemon/fused/${apparentPokemon.template['num']}/${apparentPokemon.template['num']}.${apparentPokemon2.num}.png" width="100" height="100"></p></details>`);
-				let baseStatsFusion=this.fuseStatsCalculate(apparentPokemon.baseTemplate, apparentPokemon2, pokemon.battle.cachedFormat.fusionmonsRules['Alternative']);
-				for(let i in apparentPokemon.baseStats)
-					{
-					}
+					if(apparentPokemon.template.num<152&&apparentPokemon2.num<152) this.add('html',`<details><summary>Спрайт</summary><p><img src="http://images.alexonsager.net/pokemon/fused/${apparentPokemon.template['num']}/${apparentPokemon.template['num']}.${apparentPokemon2.num}.png" width="100" height="100"></p></details>`);
+					let baseStatsFusion=this.fuseStatsCalculate(apparentPokemon.baseTemplate, apparentPokemon2, pokemon.battle.cachedFormat.fusionmonsRules['Alternative']);
 					let baseStatsFusionText=`<table><tr><b><th>HP</th><th>Attack</th><th>Defense</th><th>Sp.Attack</th><th>Sp.Defense</th><th>Speed</th></b></tr> <tr><td>${baseStatsFusion['hp']}</td><td>${baseStatsFusion['atk']}</td><td>${baseStatsFusion['def']}</td><td>${baseStatsFusion['spa']}</td><td>${baseStatsFusion['spd']}</td><td>${baseStatsFusion['spe']}</td></tr></table>`;
-					this.add('html', `<font size=0.95 color=#5c5c8a>${baseStatsFusionText}</font>`);
+					let minPossibleSpeed=Math.floor(Math.floor(Math.floor(2 * baseStatsFusion['spe']) * pokemon.set.level / 100 + 5)*0.9);
+					let maxPossibleSpeed=Math.floor(Math.floor(Math.floor(2 * baseStatsFusion['spe'] + 31 + Math.floor(252 / 4)) * pokemon.set.level / 100 + 5)*1.1);
+					this.add('html', `<font size=0.95 color=#5c5c8a>${baseStatsFusionText}Possible speed: ${minPossibleSpeed}-${maxPossibleSpeed}</font>`);
 				}
 			}
 		}
@@ -146,6 +144,7 @@ exports.BattleScripts = {
 	
 	fuseLearnets: function(template1, template2, isAlternate) {
 		let newLearnset={};
+
 		let template1Learnset={};
 		let template2Learnset={};
 		let movedex=Dex.data['Movedex'];
@@ -173,13 +172,13 @@ exports.BattleScripts = {
 			for(let i in template1Learnset){
 				let move=Dex.getMove(i);
 				let effectiveness=(Dex.getEffectiveness(move.type, types[1]?types[1]:types[0])+Dex.getImmunity(move.type, types[1]?types[1]:types[0])-1)*(Dex.getEffectiveness(types[1]?types[1]:types[0], move.type)+Dex.getImmunity(types[1]?types[1]:types[0], move.type) - 1) >= 0;
-				if((Dex.getEffectiveness(move.type, types[1]?types[1]:types[0]) <= 0 && effectiveness) || types.includes(move.type) || template2.learnset[i])
+				if((Dex.getEffectiveness(move.type, types[1]?types[1]:types[0]) <= 0 && effectiveness) || types.includes(move.type) || template2Learnset[i])
 					newLearnset[i]=true;
 			}
 			for(let i in template2Learnset){
 				let move=Dex.getMove(i);
 				let effectiveness=(Dex.getEffectiveness(move.type, types[0])+Dex.getImmunity(move.type, types[0])-1)*(Dex.getEffectiveness(types[0], move.type)+Dex.getImmunity(types[0], move.type)-1) >= 0;
-				if((Dex.getEffectiveness(move.type, types[0]) <= 0 && effectiveness)|| types.includes(move.type) || template1.learnset[i])
+				if((Dex.getEffectiveness(move.type, types[0]) <= 0 && effectiveness)|| types.includes(move.type) || template1Learnset[i])
 					newLearnset[i]=true;
 			}
 		}
