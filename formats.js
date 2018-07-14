@@ -5,7 +5,7 @@
 
 	{
 		name: "[Gen 7] Alternative Fusionmons Uber",
-		desc: ["",],
+		desc: ["Stats calculation formula: NewStat=MaxBST*(Stat1/BST1+Stat2/BST2)/2."],
 		mod: 'fusiomons',
 		column: 2,
 		lr: true,
@@ -33,23 +33,7 @@
 		fusionmonsRules: {'Alternative':0},
 		ruleset: ['Pokemon', 'Fusion', 'Sleep Clause Mod', 'HP Percentage Mod', 'Cancel Mod'],
 		onAfterMega: function (pokemon) {
-			pokemon.removeVolatile('hybride');
-			let d=this.data['Pokedex'];
-			let name=pokemon.name.substring(1,20);
-			let template = this.getTemplate(d[pokemon.speciesid].otherFormes[0]);
-			let template2 = this.getTemplate(pokemon.name.substring(1,20));
-			if(!template2.exists)
-			{
-				name=pokemon.species;
-				template2 =  template;
-			}
-			let stats={};
-			for(let stat in pokemon.template.baseStats)
-				{
-				stats[stat]=(d[template.speciesid].baseStats[stat]+d[template2.speciesid].baseStats[stat])/2;
-				}
-			pokemon.baseStats=this.spreadModify(stats, pokemon.set);
-			this.info(pokemon, template2);
+			this.afterMega(pokemon);
 		},
 		onModifyTemplate: function (template, pokemon) {
 			if(!template.isMega) return this.fuse(template, pokemon);
@@ -67,23 +51,7 @@
 		ruleset: ['Pokemon', 'Fusion', 'Sleep Clause Mod', 'Species Clause', 'Nickname Clause', 'OHKO Clause', 'Moody Clause', 'Evasion Moves Clause', 'Endless Battle Clause', 'Exact HP Mod', 'Cancel Mod', 'Team Preview'],
 		banlist: ['Shadow Tag', 'Arena Trap', 'CAP', 'Gengarite', 'Baton Pass'],
 		onAfterMega: function (pokemon) {
-			pokemon.removeVolatile('hybride');
-			let d=this.data['Pokedex'];
-			let name=pokemon.name.substring(1,20);
-			let template = this.getTemplate(d[pokemon.speciesid].otherFormes[0]);
-			let template2 = this.getTemplate(pokemon.name.substring(1,20));
-			if(!template2.exists)
-			{
-				name=pokemon.species;
-				template2 =  template;
-			}
-			let stats={};
-			for(let stat in pokemon.template.baseStats)
-				{
-				stats[stat]=(d[template.speciesid].baseStats[stat]+d[template2.speciesid].baseStats[stat])/2;
-				}
-			pokemon.baseStats=this.spreadModify(stats, pokemon.set);
-			this.info(pokemon, template2);
+			this.afterMega(pokemon);
 		},
 		onModifyTemplate: function (template, pokemon) {		
 			if(!template.isMega) return this.fuse(template, pokemon);
@@ -101,23 +69,7 @@
 		ruleset: ['Pokemon', 'Fusion', 'Sleep Clause Mod', 'Species Clause', 'Nickname Clause', 'OHKO Clause', 'Moody Clause', 'Evasion Moves Clause', 'Endless Battle Clause', 'Exact HP Mod', 'Cancel Mod', 'Team Preview'],
 		banlist: ['CAP'],
 		onAfterMega: function (pokemon) {
-			pokemon.removeVolatile('hybride');
-			let d=this.data['Pokedex'];
-			let name=pokemon.name.substring(1,20);
-			let template = this.getTemplate(d[pokemon.speciesid].otherFormes[0]);
-			let template2 = this.getTemplate(pokemon.name.substring(1,20));
-			if(!template2.exists)
-			{
-				name=pokemon.species;
-				template2 =  template;
-			}
-			let stats={};
-			for(let stat in pokemon.template.baseStats)
-				{
-				stats[stat]=(d[template.speciesid].baseStats[stat]+d[template2.speciesid].baseStats[stat])/2;
-				}
-			pokemon.baseStats=this.spreadModify(stats, pokemon.set);
-			this.info(pokemon, template2);
+			this.afterMega(pokemon);
 		},
 		onModifyTemplate: function (template, pokemon) {		
 			if(!template.isMega) return this.fuse(template, pokemon);
@@ -135,23 +87,7 @@
 		ruleset: ['Pokemon', 'Fusion', 'Species Clause', 'Nickname Clause', 'OHKO Clause', 'Moody Clause', 'Evasion Moves Clause', 'Endless Battle Clause', 'Exact HP Mod', 'Cancel Mod', 'Team Preview'],
 		banlist: ['CAP', 'Gengarite', 'Eevium Z', 'Kangaskhanite', 'Dark Void', 'Gravity ++ Grass Whistle', 'Gravity ++ Hypnosis', 'Gravity ++ Lovely Kiss', 'Gravity ++ Sing', 'Gravity ++ Sleep Powder',],
 		onAfterMega: function (pokemon) {
-			pokemon.removeVolatile('hybride');
-			let d=this.data['Pokedex'];
-			let name=pokemon.name.substring(1,20);
-			let template = this.getTemplate(d[pokemon.speciesid].otherFormes[0]);
-			let template2 = this.getTemplate(pokemon.name.substring(1,20));
-			if(!template2.exists)
-			{
-				name=pokemon.species;
-				template2 =  template;
-			}
-			let stats={};
-			for(let stat in pokemon.template.baseStats)
-				{
-				stats[stat]=(d[template.speciesid].baseStats[stat]+d[template2.speciesid].baseStats[stat])/2;
-				}
-			pokemon.baseStats=this.spreadModify(stats, pokemon.set);
-			this.info(pokemon, template2);
+			this.afterMega(pokemon);
 		},
 		onModifyTemplate: function (template, pokemon) {
 			if(!template.isMega) return this.fuse(template, pokemon);
