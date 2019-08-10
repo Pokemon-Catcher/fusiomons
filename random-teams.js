@@ -1,6 +1,6 @@
 'use strict';
  
-const RandomTeams = require('../../data/random-teams');
+const RandomTeams = require('../../random-teams');
  
 class RandomFusionTeams extends RandomTeams {
     randomTeam() {
@@ -113,7 +113,7 @@ class RandomFusionTeams extends RandomTeams {
 			let item;
 			item=set.item;
 			// Make sure forme is legal
-			if (template.battleOnly || template.requiredItems && !template.requiredItems.some(req => toId(req) === item)) {
+			if (template.battleOnly || template.requiredItems && !template.requiredItems.some(req => toID(req) === item)) {
 				template = this.getTemplate(template.baseSpecies);
 				species = template.name;
 			}
@@ -928,7 +928,7 @@ class RandomFusionTeams extends RandomTeams {
 					(hasAbility['Stance Change'] && !counter.setupType && movePool.includes('kingsshield')) ||
 					(hasAbility['Water Bubble'] && !counter['Water']) ||
 					(counter['defensesetup'] && !counter.recovery && !hasMove['rest']) ||
-					(movePool.includes('technoblast') || template.requiredMove && movePool.includes(toId(template.requiredMove)))) &&
+					(movePool.includes('technoblast') || template.requiredMove && movePool.includes(toID(template.requiredMove)))) &&
 					(counter['physicalsetup'] + counter['specialsetup'] < 2 && (!counter.setupType || counter.setupType === 'Mixed' || (move.category !== counter.setupType && move.category !== 'Status') || counter[counter.setupType] + counter.Status > 3))) {
 					// Reject Status or non-STAB
 					if (!isSetup && !move.weather && moveid !== 'judgment' && moveid !== 'rest' && moveid !== 'sleeptalk') {
@@ -1334,7 +1334,7 @@ class RandomFusionTeams extends RandomTeams {
 			let rejectAbility = false;
 			if (ability in counterAbilities) {
 				// Adaptability, Contrary, Hustle, Iron Fist, Skill Link
-				rejectAbility = !counter[toId(ability)];
+				rejectAbility = !counter[toID(ability)];
 			} else if (ability in ateAbilities) {
 				rejectAbility = !counter['Normal'];
 			} else if (ability === 'Blaze') {

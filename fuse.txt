@@ -1,7 +1,7 @@
 	fm: 'fuse',
 	fuse: function (target, room, user, connection, cmd) {
 		if (!this.runBroadcast()) return;
-		let fusionmonsScript=require('../mods/fusiomons/scripts.js').BattleScripts;
+		let fusionmonsScript=require('../../data/mods/fusiomons/scripts.js').BattleScripts;
 		let buffer;
 		let sep = target.split(',');
 		if (sep.length >= 2) {
@@ -38,7 +38,7 @@
 	fml: 'fuselearnset',
 	fuselearnset: function (target, room, user, connection, cmd) {
 		if (!this.runBroadcast()) return;
-		let fusionmonsScript=require('../mods/fusiomons/scripts.js').BattleScripts;
+		let fusionmonsScript=require('../../data/mods/fusiomons/scripts.js').BattleScripts;
 		let buffer=``;
 		let colorTable={
 				'???':`#1bc4a8`,

@@ -1,6 +1,6 @@
 'use strict';
-let TeamValidator = require('./../../sim/team-validator');
-let Dex=require('./../../sim/dex');
+let TeamValidator = require('../../../.sim-dist/team-validator.js').TeamValidator;
+let Dex=require('../../../.sim-dist/dex.js').Dex;
 
 exports.BattleScripts = {
 	inherit: 'gen7',
@@ -88,7 +88,13 @@ exports.BattleScripts = {
 			this.add('html', `<b>${""+apparentPokemon.species+" + "+dex[apparentPokemon2.speciesid].species+' base stats:'}</b>`);
 			if(apparentPokemon2.exists)
 				{
-					if(apparentPokemon.template.num<152&&apparentPokemon2.num<152) this.add('html',`<details><summary>Спрайт</summary><p><img src="http://images.alexonsager.net/pokemon/fused/${apparentPokemon.template['num']}/${apparentPokemon.template['num']}.${apparentPokemon2.num}.png" width="100" height="100"></p></details>`);
+					if(apparentPokemon.template.num<722&&apparentPokemon2.num<722) {
+						let num1=apparentPokemon.template['num'];
+						let num2=apparentPokemon2.num;
+						num1+=(num1>386?4:0)+(num1>668?1:0)+(num1>669?4:0)+(num1>670?4:0)+(num1>671?4:0)+(num1>678?1:0)+(num1>681?1:0)+(num1>709?1:0)+(num1>718?2:0)+(num1>719?1:0)+(num1>720?1:0);
+						num2+=(num2>386?4:0)+(num2>668?1:0)+(num2>669?4:0)+(num2>670?4:0)+(num2>671?4:0)+(num2>678?1:0)+(num2>681?1:0)+(num2>709?1:0)+(num2>718?2:0)+(num2>719?1:0)+(num2>720?1:0);
+						this.add('html',`<details><summary>Спрайт</summary><p><img src="https://japeal.com/wordpress/wp-content/themes/total/PKM/upload2/${num1}X${num2}X0.png"></p></details>`);
+					}
 					let baseStatsFusion=this.fuseStatsCalculate(apparentPokemon.baseTemplate, apparentPokemon2, pokemon.battle.cachedFormat.fusionmonsRules['Alternative']);
 					let baseStatsFusionText=`<table><tr><b><th>HP</th><th>Attack</th><th>Defense</th><th>Sp.Attack</th><th>Sp.Defense</th><th>Speed</th></b></tr> <tr><td>${baseStatsFusion['hp']}</td><td>${baseStatsFusion['atk']}</td><td>${baseStatsFusion['def']}</td><td>${baseStatsFusion['spa']}</td><td>${baseStatsFusion['spd']}</td><td>${baseStatsFusion['spe']}</td></tr></table>`;
 					let minPossibleSpeed=Math.floor(Math.floor(Math.floor(2 * baseStatsFusion['spe']) * pokemon.set.level / 100 + 5)*0.9);
@@ -150,10 +156,10 @@ exports.BattleScripts = {
 		let movedex=Dex.data['Movedex'];
 		
 		for(let i in movedex){
-			let result=TeamValidator('gen7uber').checkLearnset(i, template1.species);
+			let result=new TeamValidator('gen7uber').checkLearnset(i, template1.species);
 			if(!result || result['type']!='invalid')
 				template1Learnset[i]=true;
-			result=TeamValidator('gen7uber').checkLearnset(i, template2.species);
+			result=new TeamValidator('gen7uber').checkLearnset(i, template2.species);
 			if(!result || result['type']!='invalid')
 				template2Learnset[i]=true;
 		}

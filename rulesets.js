@@ -1,6 +1,8 @@
 'use strict';
+/**@type {{[k: string]: ModdedFormatsData}} */
 
-exports.BattleFormats = {
+
+let BattleFormats = {
 	pokemon:{
 	effectType: 'ValidatorRule',
 	name: 'Pokemon',
@@ -109,7 +111,7 @@ exports.BattleFormats = {
 				if (template.requiredItems && !template.requiredItems.includes(item.name)) {
 					problems.push("" + template.species + " transforms in-battle with " + Chat.plural(template.requiredItems.length, "either ") + template.requiredItems.join(" or ") + '.'); // Mega or Primal
 				}
-				if (template.requiredMove && set.moves.indexOf(toId(template.requiredMove)) < 0) {
+				if (template.requiredMove && set.moves.indexOf(toID(template.requiredMove)) < 0) {
 					problems.push("" + template.species + " transforms in-battle with " + template.requiredMove + "."); // Meloetta-Pirouette, Rayquaza-Mega
 				}
 				set.species = template.baseSpecies; // Fix forme for Aegislash, Castform, etc.
@@ -120,7 +122,7 @@ exports.BattleFormats = {
 				if (template.requiredItems && !template.requiredItems.includes(item.name)) {
 					problems.push("" + (set.name || set.species) + " needs to hold " + Chat.plural(template.requiredItems.length, "either ") + template.requiredItems.join(" or ") + '.'); // Memory/Drive/Griseous Orb/Plate/Z-Crystal - Forme mismatch
 				}
-				if (template.requiredMove && set.moves.indexOf(toId(template.requiredMove)) < 0) {
+				if (template.requiredMove && set.moves.indexOf(toID(template.requiredMove)) < 0) {
 					problems.push("" + (set.name || set.species) + " needs to have the move " + template.requiredMove + "."); // Keldeo-Resolute
 				}
 
@@ -141,7 +143,7 @@ exports.BattleFormats = {
 				template = this.getTemplate(set.species);
 
 			}
-			let TeamValidator = require('./../../sim/team-validator');
+			let TeamValidator = require('../../../.sim-dist/team-validator.js').TeamValidator;
 			if(set.name != undefined|set.name != null)
 				{
 				name=set.name.substring(1,20);
@@ -264,11 +266,7 @@ exports.BattleFormats = {
 				}
 					return problems;
 		},
-
-
 		},
-
-
 	fusion: {
 	effectType: 'Rule',
 	name: 'Fusion',
@@ -345,37 +343,29 @@ exports.BattleFormats = {
 	teampreview: {
 		effectType: 'Rule',
 		name: 'Team Preview',
-		onStartPriority: -11,
-		onStart: function () {
+		onBegin: function () {
 			this.add('clearpoke');
-			for (let i = 0; i < this.sides[0].pokemon.length; i++) {
-				let pokemon = this.sides[0].pokemon[i];
-				let details = pokemon.details.replace(/(Arceus|Gourgeist|Genesect|Pumpkaboo|Silvally)(-[a-zA-Z?]+)?/g, '$1-*');
+			let pokemonList=[[],[]];
+			for (const pokemon of this.getAllPokemon()) {
+				pokemonList[pokemon.side.n].push(pokemon);
+				let details = pokemon.details.replace(/(Arceus|Gourgeist|Genesect|Pumpkaboo|Silvally)(-[a-zA-Z?]+)?/g, '$1-*').replace(', shiny', '');
 				this.add('poke', pokemon.side.id, details, pokemon.item ? 'item' : '');
 			}
-			for (let i = 0; i < this.sides[1].pokemon.length; i++) {
-				let pokemon = this.sides[1].pokemon[i];
-				let details = pokemon.details.replace(/(Arceus|Gourgeist|Genesect|Pumpkaboo|Silvally)(-[a-zA-Z?]+)?/g, '$1-*');
-				this.add('poke', pokemon.side.id, details, pokemon.item ? 'item' : '');
-			}
-			this.add('html',`<font color=#18334e><b>${this.p1.name+'\'s team:'}</b></font>`); 
-			let pokemonlist=[];
-			let pokemonlist2=[];
-			for(let p in this.p1.pokemon)
+			for(let p in pokemonList)
 			{
-				if(this.p1.pokemon[p].name&&this.getTemplate(this.p1.pokemon[p].name.substring(1,20)).exists)pokemonlist[p]=this.p1.pokemon[p].species+'+'+this.getTemplate(this.p1.pokemon[p].name.substring(1,20)).species; 
+				let pokemonNames=[];
+				this.add('html',`<font color=#18334e><b>${pokemonList[p][0].side.name+'\'s team:'}</b></font>`); 
+				for(let pok in pokemonList[p]){
+				if(pokemonList[p][pok].name&&this.getTemplate(pokemonList[p][pok].name.substring(1,20)).exists)
+					pokemonNames.push(pokemonList[p][pok].species+'+'+this.getTemplate(pokemonList[p][pok].name.substring(1,20)).species); 
+				}
+				this.add('html',`  <div style="padding: 0px 0px 0px 0px;margin-Bottom: 8px;margin-Left: 15px;margin-Top=0";fontSize=12><font color=#254d74>${pokemonNames.join(' / ')}</font></div>`);
 			}
-			this.add('html',`  <div style="padding: 0px 0px 0px 0px;margin-Bottom: 8px;margin-Left: 15px;margin-Top=0";fontSize=12><font color=#254d74>${pokemonlist.join(' / ')}</font></div>`);
-			this.add('html',`<b><font color=#73264b>${this.p2.name+'\'s team:'}</font></b>`); 
-			for(let p in this.p2.pokemon)
-			{
-				if(this.p2.pokemon[p].name&&this.getTemplate(this.p2.pokemon[p].name.substring(1,20)).exists)pokemonlist2[p]=this.p2.pokemon[p].species+'+'+this.getTemplate(this.p2.pokemon[p].name.substring(1,20)).species; 
-			}
-			this.add('html',` <div style="padding: 0px 0px 0px 0px;margin-Bottom: 8px;margin-Left: 15px;margin-Top=0";fontSize=12><font color=#993364> ${pokemonlist2.join(' / ')}</font></div>`);
-			},
+		},
 			onTeamPreview: function () {
 			this.makeRequest('teampreview');
 		},
 	},
-	}
+}
 
+exports.BattleFormats = BattleFormats;
