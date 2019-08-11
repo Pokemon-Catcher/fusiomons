@@ -1032,7 +1032,7 @@ class RandomFusionTeams extends RandomTeams {
 			else if(ateAbilities[abilityName] && !counter['Normal']){
 				abilitiesRatings[abilityName]=0;
 			}
-			else if(abilityName=='Triage' && !heal){
+			else if(abilityName=='Triage' && !heals){
 				abilitiesRatings[abilityName]=0;
 			}
 			else if(abilityName=='bad dreams' && (hasMove['spore'] || hasMove['sleeppowder'] || hasMove['hypnosis'] || hasMove['lovelykiss'])){

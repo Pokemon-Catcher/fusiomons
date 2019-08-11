@@ -11,6 +11,7 @@
 			this.afterMega(pokemon);
 		},
 		onModifyTemplate: function (template, pokemon) {
+			if(!this.fuse) return;
 			if(!template.isMega) return this.fuse(template, pokemon);
 		},
 	},
@@ -25,7 +26,8 @@
 		onAfterMega: function (pokemon) {
 			this.afterMega(pokemon);
 		},
-		onModifyTemplate: function (template, pokemon) {		
+		onModifyTemplate: function (template, pokemon) {
+			if(!this.fuse) return;
 			if(!template.isMega) return this.fuse(template, pokemon);
 		},
 	},
@@ -41,6 +43,7 @@
 			this.afterMega(pokemon);
 		},
 		onModifyTemplate: function (template, pokemon) {
+			if(!this.fuse) return;
 			if(!template.isMega) return this.fuse(template, pokemon);
 		},
 	},
