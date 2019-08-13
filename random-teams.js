@@ -1,7 +1,7 @@
 'use strict';
  
 const RandomTeams = require('../../random-teams');
-const Dex = require(/** @type {any} */ ('../../.sim-dist/dex')).Dex;
+const Dex = require(/** @type {any} */ ('../../../.sim-dist/dex')).Dex;
 
 class RandomFusionTeams extends RandomTeams {
     randomTeam() {
