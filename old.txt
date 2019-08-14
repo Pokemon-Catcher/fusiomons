@@ -21,7 +21,7 @@
 		* Fusionmons Uber
 		*/
 	{
-		name: "[Gen 7] Fusionmons Uber",
+		name: "[Gen 7] Fusionmons Ubers",
 		desc: ["Battle of pokemon fusions",],
 		mod: 'fusiomons',
 		lr: true,

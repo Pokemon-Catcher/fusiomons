@@ -191,14 +191,7 @@ let BattleFormats = {
 					
 					if(!lessRules)
 					{
-						for(let stat in template2.baseStats)
-						{
-							stats[stat]=template2.baseStats[stat];
-							stats[stat]=(stats[stat]+((this.getItem(set.item).megaEvolves==set.species)?this.getTemplate(this.getItem(set.item).megaStone).baseStats[stat]:template1.baseStats[stat]))/2;
-							if((ability.id=='hugepower'||ability.id=='purepower'||(abilityAfterMega&&(abilityAfterMega.id=='purepower'||abilityAfterMega.id=='hugepower')) )&&stat=='atk') stats[stat]*=2;
-							if(ability.id=='furcoat'&&stat=='def') stats[stat]*=2;
-							stats[stat]=Math.floor(stats[stat]);
-						}
+						stats=fusionmonsScript.fuseStatsCalculate(template1, template2, format.fusionmonsRules['Alternative']);
 						let b, c;
 						let BST=Object.values(stats).reduce((b,c) =>(b+c));
 						if(template1!=template2&BST>600||(template1.tier=='Uber'&template2.tier=='Uber'&&gameType!='doubles')||(doublesUbers.includes(template1.species)&&doublesUbers.includes(template2.species)&&gameType=='doubles'))
@@ -235,7 +228,7 @@ let BattleFormats = {
 					    problems.push('Ability ' + ability.name + ' is banned in fusions');
 						break;
 						case 'speedboost':
-						if(gameType!='doubles') problems.push('Ability ' + abilityAfterMega.name + ' is banned in fusions');
+						if(gameType!='doubles') problems.push('Ability ' + ability.name + ' is banned in fusions');
 						break;
 					}
 					if(abilityAfterMega){
@@ -264,7 +257,10 @@ let BattleFormats = {
 					if(move.accuracy<100&move.status=='slp'&(ability.id=='noguard'||(abilityAfterMega&&abilityAfterMega.id=='noguard'))) problems.push('Combination of '+ move.name + ' and No Guard is banned');
 					}
 				}
-					return problems;
+				
+				
+				
+				return problems;
 		},
 		},
 	fusion: {

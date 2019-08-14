@@ -2,7 +2,7 @@
 let TeamValidator = require('../../../.sim-dist/team-validator.js').TeamValidator;
 let Dex=require('../../../.sim-dist/dex.js').Dex;
 
-exports.BattleScripts = {
+let BattleScripts = {
 	inherit: 'gen7',
 	/*
 	 * Main fuse function, used in every fusionmons format. 
@@ -178,13 +178,19 @@ exports.BattleScripts = {
 			for(let i in template1Learnset){
 				let move=Dex.getMove(i);
 				let effectiveness=(Dex.getEffectiveness(move.type, types[1]?types[1]:types[0])+Dex.getImmunity(move.type, types[1]?types[1]:types[0])-1)*(Dex.getEffectiveness(types[1]?types[1]:types[0], move.type)+Dex.getImmunity(types[1]?types[1]:types[0], move.type) - 1) >= 0;
-				if((Dex.getEffectiveness(move.type, types[1]?types[1]:types[0]) <= 0 && effectiveness) || types.includes(move.type) || template2Learnset[i])
+				if((Dex.getEffectiveness(move.type, types[1]?types[1]:types[0]) <= 0 && effectiveness)|| //if move type not se to type2, and type2 not se to move type
+				types.includes(move.type) || //if fuse types has move type
+				template2Learnset[i] || //if pokemon2 has same move
+				(template1.types[0]==types[0]&&template1.types[1]==types[1])) //if types of fuse is the same as the pokemon1 types
 					newLearnset[i]=true;
 			}
 			for(let i in template2Learnset){
 				let move=Dex.getMove(i);
 				let effectiveness=(Dex.getEffectiveness(move.type, types[0])+Dex.getImmunity(move.type, types[0])-1)*(Dex.getEffectiveness(types[0], move.type)+Dex.getImmunity(types[0], move.type)-1) >= 0;
-				if((Dex.getEffectiveness(move.type, types[0]) <= 0 && effectiveness)|| types.includes(move.type) || template1Learnset[i])
+				if((Dex.getEffectiveness(move.type, types[0]) <= 0 && effectiveness)|| //if move type not se to type1, and type2 not se to move type
+				types.includes(move.type) || //if fuse types has move type
+				template1Learnset[i] || //if pokemon1 has same move
+				(template2.types[0]==types[0]&&template2.types[1]==types[1])) //if types of fuse is the same as the pokemon2 types
 					newLearnset[i]=true;
 			}
 		}
@@ -197,3 +203,4 @@ exports.BattleScripts = {
 		return types;
 	}
 }
+exports.BattleScripts = BattleScripts;

@@ -113,6 +113,7 @@ class RandomFusionTeams extends RandomTeams {
 
 			let item;
 			item=set.item;
+			let itemData=this.getItem(item);
 			// Make sure forme is legal
 			if (template.battleOnly || template.requiredItems && !template.requiredItems.some(req => toID(req) === item)) {
 				template = this.getTemplate(template.baseSpecies);
@@ -219,16 +220,9 @@ class RandomFusionTeams extends RandomTeams {
 
 			// Random shininess
 			let shiny = !this.random(1024);
-
-			//Counters
-			// if(this.getItem(item).megaStone){
-					// megaCount++;
-					// if(megaCount>1) {
-						// continue;
-					// }
-			// }
-			if (item.megaStone) teamDetails['megaStone'] = 1;
-			if (item.zMove) teamDetails['zMove'] = 1;
+			
+			if (itemData) teamDetails['megaStone'] = 1;
+			if (itemData.zMove) teamDetails['zMove'] = 1;
 			if (ability === 'Snow Warning') teamDetails['hail'] = 1;
 			if (ability === 'Drizzle' || moves.includes('raindance')) teamDetails['rain'] = 1;
 			if (ability === 'Sand Stream') teamDetails['sand'] = 1;
@@ -279,6 +273,7 @@ class RandomFusionTeams extends RandomTeams {
 	};
 	
     randomSet(template, template2, slot, teamDetails)  {
+		let heals=0;
 		if (slot === undefined) slot = 1;
 		let baseTemplate = (template = this.getTemplate(template));
 		let species = template.species;
@@ -491,7 +486,7 @@ class RandomFusionTeams extends RandomTeams {
 
 			counter = this.queryMoves(moves, hasType, hasAbility, movePool);
 		let moveList={};
-		let heals=0;
+		
 			// Iterate through the moves again, this time to cull them:
 			for (let k = 0; k < moves.length; k++) {
 				let move = this.getMove(moves[k]);
@@ -1063,7 +1058,7 @@ class RandomFusionTeams extends RandomTeams {
 			else if(abilityName=='Contrary'){
 				if((counter['physicalsetup'] || counter['specialsetup'] || counter['mixedsetup'] || counter['defensesetup'] || counter['speedsetup']))
 					abilitiesRatings[abilityName]=-0.5; 
-				else if(!counter['Contrary']) 
+				else if(counter['Contrary']) 
 					abilitiesRatings[abilityName]=2;
 			}
 			else if(abilityName=='Corrosion' && (!hasMove['toxic'] || !hasMove['sludgebomb'])){
@@ -1104,7 +1099,7 @@ class RandomFusionTeams extends RandomTeams {
 			else if((abilityName=='Insomnia' || abilityName=='Vital Spirit' || abilityName=='Sweet Veil') && hasMove['rest']){
 				abilitiesRatings[abilityName]=-0.5; 
 			}
-			else if((abilityName=='Emergency exit' || abilityName=='Wimp Out') && (counter['physicalsetup'] || counter['specialsetup'] || counter['mixedsetup'] || counter['defensesetup'] || counter['speedsetup'])){
+			else if((abilityName=='Emergency Exit' || abilityName=='Wimp Out') && (counter['physicalsetup'] || counter['specialsetup'] || counter['mixedsetup'] || counter['defensesetup'] || counter['speedsetup'])){
 				abilitiesRatings[abilityName]=-1; 
 			}
 			else if(abilityName=='Fairy Aura' && !counter['Fairy']){
